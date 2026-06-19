@@ -329,19 +329,20 @@ body {
     }
 }
 
-/* 对话发言者颜色 */
-.speaker-xia {
+/* 对话发言者颜色 - 高优先级覆盖 */
+.post-content .speaker-xia {
     color: #1a5276;
     border-left: 3px solid #1a5276;
     padding-left: 12px;
 }
 
-.speaker-feng {
+.post-content .speaker-feng {
     color: #27ae60;
     border-left: 3px solid #27ae60;
     padding-left: 12px;
 }
 
-.speaker-qiu {
+.post-content .speaker-qiu {
     color: var(--text-main);
 }
+
