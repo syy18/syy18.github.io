@@ -103,64 +103,10 @@
                 <div class="post-content">
                     <p>这是我退休前给家里折腾的一套网络拓扑，当时画了个图留档，今天翻出来看看，还挺有成就感的。</p>
 
-                    <div class="network-topo">
-                        <div class="topo-title">🏠 秋暑君家中网络拓扑图</div>
-
-                        <div class="topo-layer">
-                            <div class="topo-device topo-isp">上海电信千兆光猫<br><small>PPPoE / IPTV</small></div>
-                        </div>
-                        <div class="topo-line"></div>
-
-                        <div class="topo-branch">
-                            <div style="text-align:center">
-                                <div class="topo-label">IPTV 专用接口</div>
-                                <div class="topo-line"></div>
-                                <div class="topo-endpoints">
-                                    <div class="topo-device topo-tv">厅里 65" 索尼电视</div>
-                                    <div class="topo-device topo-tv">书房创维电视</div>
-                                    <div class="topo-device topo-tv">主卧 4K 创维电视</div>
-                                </div>
-                            </div>
-                            <div style="text-align:center">
-                                <div class="topo-label">桥接模式</div>
-                                <div class="topo-line"></div>
-                                <div class="topo-device topo-router">R66s 软路由<br><small>ARM 架构 · PPPoE 拨号</small></div>
-                                <div class="topo-line"></div>
-                                <div class="topo-device topo-switch">HBNT 五口千兆交换机<br><small>兼容 IPTV</small></div>
-                                <div class="topo-line"></div>
-                                <div class="topo-device topo-ap">Seen One AP<br><small>2.5G · 3000M WiFi6</small></div>
-                                <div class="topo-line"></div>
-                                <div class="topo-endpoints">
-                                    <div class="topo-device topo-pc">书房 Win10 台机</div>
-                                    <div class="topo-device topo-tv">各房间电视</div>
-                                    <div class="topo-device topo-ap">手机/平板 WiFi</div>
-                                </div>
-                            </div>
-                        </div>
+                                        <div style="text-align:center;margin:24px 0;">
+                        <img src="../images/topo-original.png" alt="秋暑君家中网络拓扑图" style="max-width:100%;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.15);">
+                        <p style="font-size:0.85rem;color:#7a6b5d;margin-top:8px;">曾经沧海难为水之家中网络拓扑图 - 2023年12月23日</p>
                     </div>
-
-                    <h3>拓扑说明</h3>
-
-                    <p><strong>入户端</strong></p>
-                    <p>上海电信十全十美千兆套餐，光猫负责光电转换。出来两条路：一路走 <strong>IPTV 专用接口</strong>直接到各房间电视，一路 <strong>桥接</strong>给软路由拨号，这样光猫只干本职，路由工作交给专业设备。</p>
-
-                    <p><strong>核心层</strong></p>
-                    <p><span style="color:#27ae60;font-weight:600">R66s 软路由</span>，ARM 架构，负责 PPPoE 拨号。千兆满速跑满不说，ARM 省电，7×24 小时开着也不心疼电费。下面是 <span style="color:#d35400;font-weight:600">HBNT 五口千兆交换机</span>，兼容 IPTV，全屋有线扩展都靠它。</p>
-
-                    <p><strong>无线覆盖</strong></p>
-                    <p><span style="color:#8e44ad;font-weight:600">Seen One AP</span>，2.5G 上行，WiFi6 3000M，一个 AP 管全家。厅里、书房、主卧信号满格，漫游无感。</p>
-
-                    <p><strong>终端设备</strong></p>
-                    <ul>
-                        <li><span style="color:#c0392b;font-weight:600">厅里</span>：65 寸索尼电视（IPTV + 流媒体）</li>
-                        <li><span style="color:#2980b9;font-weight:600">书房</span>：Win10 台式机 + 创维电视（IPTV）</li>
-                        <li><span style="color:#c0392b;font-weight:600">主卧</span>：创维 4K 电视（IPTV）</li>
-                    </ul>
-
-                    <h3>小结</h3>
-                    <p>这套拓扑用了几年，稳得很。光猫桥接 + 软路由拨号 + 交换机扩展 + AP 全覆盖，经典的三层结构。退休之后虽然不怎么折腾了，但看着这套自己搭的网络，心里还是踏实的。</p>
-
-                    <p>—— 秋暑君，2023 年冬</p>
                 </div>
             </article>
         </div>
@@ -171,3 +117,4 @@
     </footer>
 </body>
 </html>
+
