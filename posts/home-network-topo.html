@@ -1,0 +1,66 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>曾经沧海难为水之家中网络拓扑图 - 秋暑恍惚间随笔</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-inner">
+            <h1 class="site-title">秋暑恍惚间随笔</h1>
+            <p class="site-subtitle">半醉半醒日复日，花开花落年复年</p>
+            <nav class="site-nav">
+                <a href="../index.html" class="nav-link">首页</a>
+                <a href="../about.html" class="nav-link">关于</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <article class="post-page">
+                <header class="post-header">
+                    <h1 class="post-title">曾经沧海难为水之家中网络拓扑图</h1>
+                    <div class="post-meta">2023年12月23日 · 技术</div>
+                </header>
+                <div class="post-content">
+                    <p>这是我退休前给家里折腾的一套网络拓扑，当时画了个图留档，今天翻出来看看，还挺有成就感的。</p>
+
+                    <h3>入户端</h3>
+                    <p class="device-isp">上海电信十全十美千兆套餐（含高清IPTV）→ 光猫</p>
+                    <p>光猫出来两条路：一路走 <span class="link-iptv">IPTV 专用接口</span>，一路 <span class="link-bridge">桥接</span> 给软路由拨号。</p>
+
+                    <h3>核心层</h3>
+                    <p class="device-router">R66s 软路由（ARM 架构）</p>
+                    <p>负责 PPPoE 拨号，千兆满速跑满。ARM 架构省电，7×24 小时开着也不心疼电费。</p>
+
+                    <p class="device-switch">HBNT 五口千兆交换机（兼容 IPTV）</p>
+                    <p>交换机下面挂着全屋的设备和 AP。</p>
+
+                    <h3>无线覆盖</h3>
+                    <p class="device-ap">Seen One AP（2.5G / 3000M）</p>
+                    <p>一个 AP 管全家，厅里、书房、主卧信号都满格。</p>
+
+                    <h3>终端设备</h3>
+                    <p class="device-tv">厅里：65 寸索尼电视（可看 IPTV）</p>
+                    <p class="device-tv">书房：创维电视（可看 IPTV）</p>
+                    <p class="device-pc">书房：Win10 台式机</p>
+                    <p class="device-tv">主卧：创维 4K 电视（可看 IPTV）</p>
+
+                    <h3>小结</h3>
+                    <p>这套拓扑用了几年，稳得很。光猫桥接 + 软路由拨号 + 交换机扩展 + AP 全覆盖，经典的三层结构。退休之后虽然不怎么折腾了，但看着这套自己搭的网络，心里还是踏实的。</p>
+
+                    <p>—— 秋暑君，2023 年冬</p>
+                </div>
+            </article>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <p>&#169; 秋暑恍惚间 · 与月和兄之缘</p>
+    </footer>
+</body>
+</html>
