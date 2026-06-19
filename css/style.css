@@ -110,6 +110,17 @@ body {
     gap: 28px;
 }
 
+
+/* 卡片整体链接 */
+.post-card-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+.post-card-link:hover {
+    text-decoration: none;
+}
 .post-card {
     background: var(--card-bg);
     border-radius: var(--radius);
@@ -317,3 +328,4 @@ body {
         font-size: 1.4rem;
     }
 }
+
