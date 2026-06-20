@@ -367,7 +367,7 @@
                     : `<div style="font-size:28px;opacity:.6">📡</div>`;
                 return `
                     <div class="iptv-card" data-id="${escapeHtml(c.id)}" title="${escapeHtml(c.name || '')}">
-                        <div class="iptv-thumb" style="${c.logo ? '' : 'background:linear-gradient(135deg,#3498db,#2980b9)'; color:${c.logo?'#333':'#fff'}">${thumb}</div>
+                        <div class="iptv-thumb" style="${c.logo ? 'color:#333' : 'background:linear-gradient(135deg,#3498db,#2980b9); color:#fff'}">${thumb}</div>
                         <div class="iptv-info">
                             <div class="iptv-name">${escapeHtml(c.name || '未命名')}</div>
                             <div class="iptv-group">${escapeHtml(c.group || c.sourceName || '')}</div>
@@ -491,4 +491,3 @@
     </script>
 </body>
 </html>
-
