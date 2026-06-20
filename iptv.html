@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -11,10 +11,10 @@
     <script src="https://cdn.jsdelivr.net/npm/dashjs@4.7.4/dist/dash.all.min.js"></script>
     <style>
       /* IPTV 专用补充样式，与博客浅色卡片风格统一 */
-      .iptv-wrap { font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif; }
+      .iptv-wrap { font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif; position: relative; z-index: 1; }
       .iptv-toolbar {
         display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
-        margin-bottom: 22px;
+        margin-bottom: 22px; position: relative; z-index: 100;
       }
       .iptv-search {
         position: relative; flex: 1 1 220px; min-width: 180px;
@@ -34,7 +34,7 @@
         display: inline-flex; align-items: center; gap: 6px;
         padding: 10px 16px; border-radius: 10px; border: none;
         background: #3498db; color: #fff; font-size: 14px; font-weight: 500;
-        cursor: pointer; transition: background .15s;
+        cursor: pointer; transition: background .15s; position: relative; z-index: 101;
       }
       .iptv-btn:hover { background: #2980b9; }
       .iptv-btn-ghost {
@@ -201,7 +201,7 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
                     <input type="text" id="searchInput" placeholder="搜索频道..." autocomplete="off">
                 </div>
-                <button class="iptv-btn iptv-btn-ghost" id="sourcesBtn">⚙️ 源管理</button>
+                <button class="iptv-btn iptv-btn-ghost" id="sourcesBtn" onclick="openSources()">⚙️ 源管理</button>
             </div>
 
             <div class="iptv-tabs" id="tabs">
@@ -491,3 +491,4 @@
     </script>
 </body>
 </html>
+
