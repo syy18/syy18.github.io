@@ -267,6 +267,7 @@
     <script>
         const STORAGE_KEY = 'iptv_sources_v1';
         const FAV_KEY = 'iptv_favorites_v1';
+        const DEFAULT_SOURCES_URL = 'iptv-sources.json';
         const DEFAULT_SOURCES = [
             { id: 'demo', name: '演示源（Big Buck Bunny）', url: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8' }
         ];
@@ -274,10 +275,18 @@
         let hls = null, dash = null, currentChannel = null, favorites = new Set();
         const $ = id => document.getElementById(id);
 
-        function loadSources() {
+        async function loadSources() {
             try {
                 const raw = localStorage.getItem(STORAGE_KEY);
-                sources = raw ? JSON.parse(raw) : DEFAULT_SOURCES.slice();
+                if (raw) {
+                    sources = JSON.parse(raw);
+                } else {
+                    try {
+                        const res = await fetch(DEFAULT_SOURCES_URL);
+                        if (res.ok) sources = await res.json();
+                        else sources = DEFAULT_SOURCES.slice();
+                    } catch (e) { sources = DEFAULT_SOURCES.slice(); }
+                }
             } catch (e) { sources = DEFAULT_SOURCES.slice(); }
             try { favorites = new Set(JSON.parse(localStorage.getItem(FAV_KEY) || '[]')); } catch (e) { favorites = new Set(); }
         }
@@ -487,7 +496,7 @@
             }
         });
 
-        loadSources(); loadAll();
+        (async () => { await loadSources(); loadAll(); })();
     </script>
 </body>
 </html>

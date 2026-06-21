@@ -1,0 +1,11 @@
+[
+  { "name": "CGTN", "category": "intl", "id": "UCmvymry3Z7RLCZL5tQDqnlg", "note": "示例" },
+  { "name": "东森新闻", "category": "taiwan", "id": "V1p33hqPrUk", "note": "自定义" },
+  { "name": "中天新闻-中天辣晚报", "category": "taiwan", "id": "j4wVRD2znf0", "note": "自定义" },
+  { "name": "TVBS新闻直播 live", "category": "taiwan", "id": "wfGLM8Tiz8c", "note": "自定义" },
+  { "name": "寰宇全视界", "category": "taiwan", "id": "C5weeuoZQ_w", "note": "自定义" },
+  { "name": "凤凰资讯台 直播", "category": "hk", "id": "Ry--eMIjYLQ", "note": "自定义" },
+  { "name": "无线普通话直播", "category": "hk", "id": "PX_EW1hwJSE", "note": "自定义" },
+  { "name": "CCTV中文国际（亚洲）", "category": "intl", "id": "vNVp6bxkL1c", "note": "自定义" },
+  { "name": "新唐人電視台", "category": "custom", "id": "2Y2Dhl2hBrg", "note": "自定义" }
+]

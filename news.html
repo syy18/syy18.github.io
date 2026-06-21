@@ -125,6 +125,13 @@
         let currentCategory = 'all';
         const $ = id => document.getElementById(id);
 
+        async function loadDefaultChannels() {
+            try {
+                const res = await fetch('news-sources.json');
+                if (!res.ok) return [];
+                return await res.json();
+            } catch (e) { return []; }
+        }
         function loadChannels() {
             try {
                 const raw = localStorage.getItem(STORAGE_KEY);
@@ -221,7 +228,11 @@
             }
         });
 
-        loadChannels(); render();
+        (async () => {
+            const defs = await loadDefaultChannels();
+            if (defs.length > 0) channels = defs;
+            render();
+        })();
     </script>
 </body>
 </html>
