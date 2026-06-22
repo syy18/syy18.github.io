@@ -2068,13 +2068,12 @@
 
                 function switchChannel(dir) {
             var list = filterChannels();
-            if (!list.length && !currentChannel) return;
-            if (!list.length) { destroyPlayer(); return; }
+            if (!list.length) return;
             if (!currentChannel) { playChannel(list[0]); return; }
             for (var i = 0; i < list.length; i++) {
                 if (list[i].name === currentChannel.name) {
-                    var next = list[(i + dir + list.length) % list.length];
-                    if (next) playChannel(next);
+                    var dest = (i + dir + list.length) % list.length;
+                    playChannel(list[dest]);
                     return;
                 }
             }
