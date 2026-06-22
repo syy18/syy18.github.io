@@ -2066,16 +2066,16 @@
 
 
 
-        function switchChannel(dir) {
+                function switchChannel(dir) {
             if (!currentChannel) return;
             var list = filterChannels();
             if (!list.length) return;
-            var idx = -1;
+            var idx = 0;
             for (var i = 0; i < list.length; i++) {
-                if (String(list[i].id) === String(currentChannel.id)) { idx = i; break; }
+                if (list[i].name === currentChannel.name) { idx = i; break; }
             }
-            if (idx === -1) idx = 0;
-            var next = list[(idx + dir + list.length) % list.length];
+            var dest = (idx + dir + list.length) % list.length;
+            var next = list[dest];
             if (next) playChannel(next);
         }
 
