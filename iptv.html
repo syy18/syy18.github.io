@@ -12,7 +12,6 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
   background: #f5f0eb; color:#333; min-height:100vh;
 }
-/* ===== 导航栏 ===== */
 .nav-bar {
   background:#fff; border-bottom:1px solid #e0d6cb;
   padding:12px 20px; display:flex; align-items:center; gap:16px;
@@ -25,7 +24,6 @@ body {
 .nav-bar a:hover {background:#f0ebe4;}
 .nav-bar a.active {background:#8b7355; color:#fff;}
 .nav-title {font-size:18px; font-weight:700; color:#5a4a3a; margin-right:auto;}
-/* ===== 播放器 ===== */
 .player-wrapper {
   position:relative; width:100%; background:#000;
 }
@@ -36,7 +34,7 @@ body {
 #video-container video {width:100%; height:100%; display:block;}
 .player-controls {
   display:flex; align-items:center; justify-content:center; gap:12px;
-  padding:10px; background:#1a1a1a;
+  padding:10px; background:#1a1a1a; flex-wrap:wrap;
 }
 .player-controls button {
   background:rgba(255,255,255,0.12); border:none; color:#fff;
@@ -46,7 +44,6 @@ body {
 .player-controls button:hover {background:rgba(255,255,255,0.25);}
 .player-controls .channel-info {color:#aaa; font-size:13px;}
 .player-controls .channel-name {color:#fff; font-size:14px; min-width:120px; text-align:center;}
-/* ===== 工具栏 ===== */
 .toolbar {
   display:flex; flex-wrap:wrap; align-items:center; gap:10px;
   padding:14px 20px; background:#fff; border-bottom:1px solid #e0d6cb;
@@ -58,10 +55,9 @@ body {
 .search-box {
   flex:1; min-width:180px; max-width:320px;
   padding:8px 14px; border:1px solid #d0c4b6; border-radius:20px;
-  font-size:14px; outline:none; background:#faf8f5; transition:border .2s;
+  font-size:14px; outline:none; background:#faf8f5;
 }
 .search-box:focus {border-color:#8b7355;}
-/* ===== 分类标签 ===== */
 .categories {
   display:flex; flex-wrap:wrap; gap:6px; padding:12px 20px;
   border-bottom:1px solid #e0d6cb;
@@ -73,7 +69,6 @@ body {
 }
 .cat-btn:hover {background:#f0ebe4;}
 .cat-btn.active {background:#8b7355; color:#fff; border-color:#8b7355;}
-/* ===== 频道网格 ===== */
 .channel-grid {
   display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
   gap:12px; padding:20px; max-width:1200px; margin:0 auto;
@@ -101,13 +96,11 @@ body {
 }
 .fav-btn:hover {background:rgba(0,0,0,0.75);}
 .fav-btn.active {color:#ffd700;}
-/* ===== 加载 / 空状态 ===== */
 .loading {text-align:center; padding:60px 20px; color:#b0a090; font-size:15px;}
 .loading .spinner {display:inline-block; width:32px; height:32px; border:3px solid #e0d6cb; border-top-color:#8b7355; border-radius:50%; animation:spin .8s linear infinite; margin-bottom:12px;}
 @keyframes spin {to{transform:rotate(360deg)}}
 .empty-state {text-align:center; padding:60px 20px; color:#b0a090;}
 .empty-state .icon {font-size:48px; margin-bottom:12px;}
-/* ===== 欢迎弹窗 ===== */
 .welcome-overlay {
   position:fixed; top:0; left:0; width:100%; height:100%;
   background:rgba(0,0,0,0.55); display:flex; align-items:center; justify-content:center;
@@ -124,19 +117,16 @@ body {
   color:#fff; border:none; border-radius:24px; font-size:15px; cursor:pointer;
 }
 .welcome-card .btn:hover {background:#7a6347;}
-/* ===== 响应式 ===== */
 @media (max-width:600px) {
   .channel-grid {grid-template-columns:repeat(2,1fr); gap:8px; padding:12px;}
-  .toolbar {flex-wrap:wrap; gap:8px; padding:10px 14px;}
+  .toolbar {padding:10px 14px;}
   .search-box {min-width:140px;}
   .nav-bar {padding:10px 14px; gap:10px; flex-wrap:wrap;}
-  .player-controls {flex-wrap:wrap; gap:8px;}
 }
 </style>
 </head>
 <body>
 
-<!-- 导航栏 -->
 <div class="nav-bar">
   <span class="nav-title">秋暑的小馆</span>
   <a href="https://syy18.github.io/">首页</a>
@@ -144,27 +134,24 @@ body {
   <a href="https://syy18.github.io/news.html">📰 新闻</a>
 </div>
 
-<!-- 播放器 -->
 <div class="player-wrapper">
   <div id="video-container"><video id="video-player" controls autoplay playsinline></video></div>
   <div class="player-controls">
-    <button id="prev-btn" onclick="switchChannel(-1)" title="上一频道 (←)">◀ 上一频道</button>
+    <button onclick="switchChannel(-1)" title="上一频道 (←)">◀ 上一频道</button>
     <span class="channel-name" id="current-channel-name">未选择频道</span>
     <span class="channel-info" id="channel-position"></span>
-    <button id="next-btn" onclick="switchChannel(1)" title="下一频道 (→)">下一频道 ▶</button>
+    <button onclick="switchChannel(1)" title="下一频道 (→)">下一频道 ▶</button>
   </div>
 </div>
 
-<!-- 工具栏 -->
 <div class="toolbar">
   <div style="display:flex;align-items:center;gap:4px;">
     <span style="font-size:14px;color:#5a4a3a;">全部</span>
     <span class="count-badge" id="total-count">0</span>
   </div>
-  <input class="search-box" id="search-input" placeholder="🔍 搜索频道名称或分组..." oninput="renderChannels()">
+  <input class="search-box" id="search-input" placeholder="🔍 搜索频道名称或分组..." oninput="doSearch()">
 </div>
 
-<!-- 分类 -->
 <div class="categories" id="categories">
   <button class="cat-btn active" data-cat="all" onclick="switchCategory('all')">全部</button>
   <button class="cat-btn" data-cat="国内" onclick="switchCategory('国内')">🇨🇳 国内</button>
@@ -174,7 +161,6 @@ body {
   <button class="cat-btn" data-cat="fav" onclick="switchCategory('fav')">⭐ 收藏</button>
 </div>
 
-<!-- 频道网格 -->
 <div id="channel-grid" class="channel-grid"></div>
 
 <script>
@@ -186,13 +172,14 @@ const WELCOME_KEY = 'iptv_welcomed_v1';
 
 // ===== 全局状态 =====
 let allChannels = [];
+let filteredChannels = [];
 let currentCategory = 'all';
 let currentChannel = null;
 let hlsInstance = null;
 let dashInstance = null;
 
 // ===== 欢迎弹窗 =====
-(function showWelcome() {
+(function() {
   if (!localStorage.getItem(WELCOME_KEY)) {
     const div = document.createElement('div');
     div.className = 'welcome-overlay';
@@ -212,63 +199,48 @@ let dashInstance = null;
 })();
 function dismissWelcome() {
   const el = document.getElementById('welcome-overlay');
-  if (el) {el.remove();}
+  if (el) el.remove();
   localStorage.setItem(WELCOME_KEY, '1');
 }
 
 // ===== 键盘事件 =====
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'ArrowLeft') { switchChannel(-1); }
-  else if (e.key === 'ArrowRight') { switchChannel(1); }
+  if (e.key === 'ArrowLeft') switchChannel(-1);
+  else if (e.key === 'ArrowRight') switchChannel(1);
 });
 
 // ===== 初始化 =====
 (async function init() {
   try {
-    // 1. 从 localStorage 拿用户保存的自定义源
     const stored = localStorage.getItem(STORAGE_KEY);
     let localSources = [];
     if (stored) {
       try { localSources = JSON.parse(stored); } catch(e) {}
     }
-
-    // 2. 从云端加载默认源
     let defaultSources = [];
     try {
       const resp = await fetch(DEFAULT_SOURCES_URL);
-      if (resp.ok) {
-        defaultSources = await resp.json();
-      }
-    } catch(e) {
-      console.warn('加载默认源失败:', e);
-    }
+      if (resp.ok) defaultSources = await resp.json();
+    } catch(e) { console.warn('加载默认源失败:', e); }
 
-    // 3. 合并：优先用用户保存的，如果没有则用默认源写入 localStorage
     let sources = localSources;
     if (sources.length === 0 && defaultSources.length > 0) {
       sources = defaultSources;
       localStorage.setItem(STORAGE_KEY, JSON.stringify(sources));
     }
-
     if (sources.length === 0) {
-      // 兜底：演示源
       sources = [{id:'demo',name:'演示源（Big Buck Bunny）',url:'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8'}];
       localStorage.setItem(STORAGE_KEY, JSON.stringify(sources));
     }
 
-    // 4. 解析所有 M3U 源
     for (const src of sources) {
       try {
         const channels = await parseM3U(src.url, src.name);
         allChannels = allChannels.concat(channels);
-      } catch(e) {
-        console.warn('解析源失败:', src.name, e);
-      }
+      } catch(e) { console.warn('解析源失败:', src.name, e); }
     }
 
-    // 5. 渲染
-    renderChannels();
-    updateCount();
+    applyFilterAndRender();
   } catch(e) {
     console.error('初始化失败:', e);
     document.getElementById('channel-grid').innerHTML = '<div class="empty-state"><div class="icon">⚠️</div>加载频道失败，请刷新重试</div>';
@@ -279,11 +251,9 @@ document.addEventListener('keydown', function(e) {
 async function parseM3U(url, sourceName) {
   const resp = await fetch(url);
   const text = await resp.text();
-
   const channels = [];
   const lines = text.split('\n');
   let extinf = null;
-
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
     if (line.startsWith('#EXTINF:')) {
@@ -304,13 +274,10 @@ async function parseM3U(url, sourceName) {
 
 function parseExtinf(line) {
   const result = {name:'未知频道',logo:'',group:'其他'};
-  // tvg-logo
   const logoMatch = line.match(/tvg-logo="([^"]*)"/i);
   if (logoMatch) result.logo = logoMatch[1];
-  // group-title
   const groupMatch = line.match(/group-title="([^"]*)"/i);
   if (groupMatch) result.group = groupMatch[1];
-  // 频道名（最后一个逗号后面）
   const nameMatch = line.match(/,([^,]+)$/);
   if (nameMatch) result.name = nameMatch[1].trim();
   return result;
@@ -320,21 +287,17 @@ function parseExtinf(line) {
 function getCategory(ch) {
   const g = (ch.group || '').toLowerCase();
   const n = (ch.name || '').toLowerCase();
-
-  // 上海
   if (g.includes('上海') || g.includes('shanghai') || n.includes('上海') ||
       g.includes('东方') || g.includes('五星体育') || g.includes('上海教育') ||
       g.includes('上海新闻') || g.includes('上海都市') || g.includes('上海娱乐') ||
       g.includes('上海电视剧') || g.includes('上海外语') || g.includes('上海纪实')) {
     return '上海';
   }
-  // 新闻
   if (g.includes('新闻') || g.includes('news') || n.includes('新闻') ||
-      g.includes('cctv') && (g.includes('新闻') || g.includes('news')) ||
+      (g.includes('cctv') && (g.includes('新闻') || g.includes('news'))) ||
       n.includes('凤凰') || n.includes('ntd') || n.includes('新唐人')) {
     return '新闻';
   }
-  // 国际
   if (g.includes('国际') || g.includes('境外') || g.includes('global') ||
       g.includes('international') || g.includes('外语') || g.includes('外台') ||
       g.includes('bbc') || g.includes('cnn') || g.includes('al jazeera') ||
@@ -342,7 +305,6 @@ function getCategory(ch) {
       n.includes('bbc') || n.includes('cnn')) {
     return '国际';
   }
-  // 国内
   if (g.includes('国内') || g.includes('cctv') || g.includes('央视') ||
       g.includes('卫视') || g.includes('中央') || g.includes('中国') ||
       g.includes('各省') || g.includes('地方') || g.includes('内地') ||
@@ -352,12 +314,10 @@ function getCategory(ch) {
   return '国际';
 }
 
-// ===== 渲染频道 =====
-function renderChannels() {
-  const grid = document.getElementById('channel-grid');
+// ===== 核心过滤 + 渲染 =====
+function applyFilterAndRender() {
   const query = (document.getElementById('search-input').value || '').trim().toLowerCase();
   const favs = getFavs();
-
   let list = allChannels;
 
   // 分类过滤
@@ -375,7 +335,7 @@ function renderChannels() {
     );
   }
 
-  // 去重（同名+同地址去重）
+  // 去重
   const seen = new Set();
   list = list.filter(ch => {
     const key = ch.name + '|' + ch.url;
@@ -384,7 +344,14 @@ function renderChannels() {
     return true;
   });
 
-  // 更新数量
+  filteredChannels = list;
+  renderChannelGrid();
+}
+
+function renderChannelGrid() {
+  const grid = document.getElementById('channel-grid');
+  const list = filteredChannels;
+
   document.getElementById('total-count').textContent = list.length;
 
   if (list.length === 0) {
@@ -392,12 +359,13 @@ function renderChannels() {
     return;
   }
 
+  const favs = getFavs();
   grid.innerHTML = list.map((ch, idx) => {
-    const isActive = currentChannel && currentChannel.url === ch.url;
+    const isActive = currentChannel && currentChannel.name === ch.name && currentChannel.url === ch.url;
     const isFav = favs.includes(ch.name);
     const logoHtml = ch.logo ? `<img src="${ch.logo}" alt="" onerror="this.style.display='none'">` : '';
     return `
-      <div class="channel-card ${isActive ? 'active' : ''}" onclick="playChannelByIndex(${idx})" data-index="${idx}">
+      <div class="channel-card ${isActive ? 'active' : ''}" onclick="playChannelByIndex(${idx})">
         <div class="channel-thumb">
           ${logoHtml}
           <button class="fav-btn ${isFav ? 'active' : ''}" onclick="event.stopPropagation();toggleFav('${ch.name.replace(/'/g,"\\'")}')">${isFav ? '★' : '☆'}</button>
@@ -408,119 +376,108 @@ function renderChannels() {
         </div>
       </div>`;
   }).join('');
-
-  // 保存当前过滤列表（用于换台）
-  window._filteredChannels = list;
 }
 
-// ===== 播放频道 =====
-function playChannel(ch) {
-  if (!ch) return;
-  currentChannel = ch;
-
-  // 销毁旧播放器
-  if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
-  if (dashInstance) { dashInstance.reset(); dashInstance = null; }
-
-  const video = document.getElementById('video-player');
-  const url = ch.url;
-
-  document.getElementById('current-channel-name').textContent = ch.name;
-
-  if (url.includes('.m3u8')) {
-    if (Hls.isSupported()) {
-      hlsInstance = new Hls();
-      hlsInstance.loadSource(url);
-      hlsInstance.attachMedia(video);
-      hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(()=>{}));
-    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      video.src = url;
-      video.play().catch(()=>{});
-    } else {
-      alert('当前浏览器不支持 HLS 播放');
-    }
-  } else if (url.includes('.mpd')) {
-    dashInstance = dashjs.MediaPlayer().create();
-    dashInstance.initialize(video, url, true);
-  } else {
-    video.src = url;
-    video.play().catch(()=>{});
-  }
-
-  // 更新位置显示
+// ===== 搜索 =====
+function doSearch() {
+  applyFilterAndRender();
   updatePosition();
-  // 高亮当前卡片
-  renderChannels();
-}
-
-function playChannelByIndex(idx) {
-  const list = window._filteredChannels || [];
-  const ch = list[idx];
-  if (ch) playChannel(ch);
-}
-
-// ===== 换台 =====
-function switchChannel(dir) {
-  const list = window._filteredChannels || [];
-  if (list.length === 0) return;
-
-  if (!currentChannel) {
-    playChannel(list[0]);
-    return;
-  }
-
-  // 通过 name + url 找当前索引
-  let idx = list.findIndex(ch => ch.name === currentChannel.name && ch.url === currentChannel.url);
-  if (idx === -1) {
-    // 可能因为去重或刷新，用 name 模糊找
-    idx = list.findIndex(ch => ch.name === currentChannel.name);
-  }
-  if (idx === -1) idx = 0;
-
-  let newIdx = idx + dir;
-  if (newIdx < 0) newIdx = list.length - 1;
-  if (newIdx >= list.length) newIdx = 0;
-
-  playChannel(list[newIdx]);
-}
-
-function updatePosition() {
-  const list = window._filteredChannels || [];
-  if (!currentChannel || list.length === 0) {
-    document.getElementById('channel-position').textContent = '';
-    return;
-  }
-  let idx = list.findIndex(ch => ch.name === currentChannel.name && ch.url === currentChannel.url);
-  if (idx === -1) idx = list.findIndex(ch => ch.name === currentChannel.name);
-  if (idx === -1) idx = 0;
-  document.getElementById('channel-position').textContent = `${idx+1} / ${list.length}`;
-}
-
-function updateCount() {
-  const list = window._filteredChannels || allChannels;
-  document.getElementById('total-count').textContent = list.length;
 }
 
 // ===== 分类切换 =====
 function switchCategory(cat) {
   currentCategory = cat;
   document.querySelectorAll('.cat-btn').forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
-  renderChannels();
+  applyFilterAndRender();
+  updatePosition();
+  // 如果当前播放的频道不在当前分类里，不清除播放
 }
 
-// ===== 收藏功能 =====
+// ===== 播放 =====
+function playChannel(ch) {
+  if (!ch) return;
+  currentChannel = ch;
+
+  if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
+  if (dashInstance) { dashInstance.reset(); dashInstance = null; }
+
+  const video = document.getElementById('video-player');
+  document.getElementById('current-channel-name').textContent = ch.name;
+
+  if (ch.url.includes('.m3u8')) {
+    if (Hls.isSupported()) {
+      hlsInstance = new Hls();
+      hlsInstance.loadSource(ch.url);
+      hlsInstance.attachMedia(video);
+      hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(()=>{}));
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = ch.url;
+      video.play().catch(()=>{});
+    } else {
+      alert('当前浏览器不支持 HLS 播放');
+    }
+  } else if (ch.url.includes('.mpd')) {
+    dashInstance = dashjs.MediaPlayer().create();
+    dashInstance.initialize(video, ch.url, true);
+  } else {
+    video.src = ch.url;
+    video.play().catch(()=>{});
+  }
+
+  updatePosition();
+  renderChannelGrid();
+}
+
+function playChannelByIndex(idx) {
+  const ch = filteredChannels[idx];
+  if (ch) playChannel(ch);
+}
+
+// ===== 换台 =====
+function switchChannel(dir) {
+  if (filteredChannels.length === 0) return;
+  if (!currentChannel) {
+    playChannel(filteredChannels[0]);
+    return;
+  }
+  let idx = filteredChannels.findIndex(ch => ch.name === currentChannel.name && ch.url === currentChannel.url);
+  if (idx === -1) idx = filteredChannels.findIndex(ch => ch.name === currentChannel.name);
+  if (idx === -1) idx = 0;
+
+  let newIdx = idx + dir;
+  if (newIdx < 0) newIdx = filteredChannels.length - 1;
+  if (newIdx >= filteredChannels.length) newIdx = 0;
+  playChannel(filteredChannels[newIdx]);
+}
+
+function updatePosition() {
+  const el = document.getElementById('channel-position');
+  if (!currentChannel || filteredChannels.length === 0) {
+    el.textContent = '';
+    return;
+  }
+  let idx = filteredChannels.findIndex(ch => ch.name === currentChannel.name && ch.url === currentChannel.url);
+  if (idx === -1) idx = filteredChannels.findIndex(ch => ch.name === currentChannel.name);
+  if (idx === -1) idx = 0;
+  el.textContent = `${idx+1} / ${filteredChannels.length}`;
+}
+
+// ===== 收藏 =====
 function getFavs() {
   try { return JSON.parse(localStorage.getItem(FAV_KEY)) || []; } catch(e) { return []; }
 }
 function saveFavs(favs) { localStorage.setItem(FAV_KEY, JSON.stringify(favs)); }
-
 function toggleFav(name) {
   let favs = getFavs();
   const idx = favs.indexOf(name);
-  if (idx > -1) { favs.splice(idx, 1); }
-  else { favs.push(name); }
+  if (idx > -1) favs.splice(idx, 1);
+  else favs.push(name);
   saveFavs(favs);
-  renderChannels();
+  if (currentCategory === 'fav') {
+    applyFilterAndRender();
+  } else {
+    renderChannelGrid();
+  }
 }
 </script>
 </body>
