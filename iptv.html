@@ -513,6 +513,8 @@
             var label = currentCategory === "all" ? "\u5168\u90e8" : (document.querySelector(".iptv-tab.active")?.textContent || "");
             el.textContent = label + " " + list.length + " \u4e2a\u9891\u9053";
         }
+        document.getElementById('prevBtn')?.addEventListener('click',function(){switchChannel(-1);});
+        document.getElementById('nextBtn')?.addEventListener('click',function(){switchChannel(1);});
         function switchChannel(dir) {
             if (!currentChannel) return;
             var list = filterChannels();
