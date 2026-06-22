@@ -946,7 +946,7 @@
 
 
 
-                <select class="iptv-quality" id="qualitySelect" title="清晰度"></select><button class="iptv-btn iptv-btn-ghost" id="prevBtn" style="padding:8px 12px;font-size:16px" title="上一个">&#8592;</button><button class="iptv-btn iptv-btn-ghost" id="nextBtn" style="padding:8px 12px;font-size:16px" title="下一个">&#8594;</button>
+                <select class="iptv-quality" id="qualitySelect" title="清晰度"></select><button class="iptv-btn iptv-btn-ghost" id="prevBtn" style="padding:8px 12px;font-size:16px" title="上一个" onclick="switchChannel(-1)">&#8592;</button><button class="iptv-btn iptv-btn-ghost" id="nextBtn" style="padding:8px 12px;font-size:16px" title="下一个" onclick="switchChannel(1)">&#8594;</button>
 
 
 
@@ -2067,16 +2067,18 @@
 
 
                 function switchChannel(dir) {
-            if (!currentChannel) return;
             var list = filterChannels();
-            if (!list.length) return;
-            var idx = 0;
+            if (!list.length && !currentChannel) return;
+            if (!list.length) { destroyPlayer(); return; }
+            if (!currentChannel) { playChannel(list[0]); return; }
             for (var i = 0; i < list.length; i++) {
-                if (list[i].name === currentChannel.name) { idx = i; break; }
+                if (list[i].name === currentChannel.name) {
+                    var next = list[(i + dir + list.length) % list.length];
+                    if (next) playChannel(next);
+                    return;
+                }
             }
-            var dest = (idx + dir + list.length) % list.length;
-            var next = list[dest];
-            if (next) playChannel(next);
+            playChannel(list[0]);
         }
 
 
