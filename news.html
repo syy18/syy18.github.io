@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>华语新闻 - 秋暑恍惚间随笔</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+      .news-wrap { font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif; }
+      .news-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 22px; }
+      .news-btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; border-radius: 10px; border: none; background: #3498db; color: #fff; font-size: 14px; font-weight: 500; cursor: pointer; transition: background .15s; }
+      .news-btn:hover { background: #2980b9; }
+      .news-btn-ghost { background: #fff; color: #555; border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+      .news-btn-ghost:hover { background: #f5f7f9; }
+      .news-tabs { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; scrollbar-width: none; }
+      .news-tabs::-webkit-scrollbar { display: none; }
+      .news-tab { flex: 0 0 auto; padding: 8px 18px; border-radius: 999px; background: #fff; color: #555; border: 1px solid rgba(0,0,0,0.08); font-size: 14px; cursor: pointer; transition: all .15s; white-space: nowrap; }
+      .news-tab:hover { color: #3498db; border-color: rgba(52,152,219,0.3); }
+      .news-tab.active { background: #3498db; color: #fff; border-color: #3498db; }
+      .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 18px; }
+      @media (max-width: 640px) { .news-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; } }
+      .news-card { background: #fff; border-radius: 14px; overflow: hidden; border: 1px solid rgba(0,0,0,0.06); box-shadow: 0 4px 14px rgba(0,0,0,0.06); cursor: pointer; transition: transform .15s, box-shadow .15s; }
+      .news-card:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(0,0,0,0.1); }
+      .news-thumb { aspect-ratio: 16/9; background: linear-gradient(135deg, #eef2f5 0%, #dfe6e9 100%); display: grid; place-items: center; font-size: 40px; }
+      .news-info { padding: 12px 14px; }
+      .news-name { font-size: 14px; font-weight: 600; color: #2c3e50; line-height: 1.3; }
+      .news-category { font-size: 12px; color: #7f8c8d; margin-top: 4px; }
+      .news-empty { text-align: center; padding: 60px 20px; color: #7f8c8d; }
+      .news-empty svg { width: 64px; height: 64px; margin-bottom: 16px; opacity: .5; }
+      .news-empty h3 { margin: 0 0 8px; color: #2c3e50; font-size: 18px; }
+      .news-empty p { margin: 0 auto 18px; font-size: 14px; line-height: 1.7; max-width: 460px; }
+      .news-player { position: fixed; inset: 0; background: rgba(0,0,0,0.94); z-index: 200; display: none; flex-direction: column; }
+      .news-player.active { display: flex; }
+      .news-player-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: rgba(11,11,14,0.95); border-bottom: 1px solid rgba(255,255,255,0.08); }
+      .news-player-title { color: #fff; font-size: 16px; font-weight: 600; }
+      .news-player-body { flex: 1; padding: 16px; background: #000; display: grid; place-items: center; }
+      .news-player-body iframe { width: 100%; height: 100%; max-width: 1200px; border: none; border-radius: 8px; }
+      .news-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 190; display: none; place-items: center; padding: 16px; backdrop-filter: blur(3px); }
+      .news-modal-backdrop.active { display: grid; }
+      .news-modal { width: 100%; max-width: 480px; background: #fff; border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); padding: 20px; }
+      .news-modal h3 { margin: 0 0 14px; font-size: 17px; color: #2c3e50; }
+      .news-input { width: 100%; padding: 10px 12px; margin-bottom: 10px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.08); background: #f8f9fa; color: #2c3e50; font-size: 14px; }
+      .news-input:focus { border-color: #3498db; outline: none; }
+      .news-hint { font-size: 12px; color: #7f8c8d; line-height: 1.6; margin-top: 12px; }
+      .news-hint code { background: #f0f3f5; padding: 1px 5px; border-radius: 4px; color: #2980b9; }
+    </style>
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-inner">
+            <h1 class="site-title">秋暑恍惚间随笔</h1>
+            <p class="site-subtitle">半醉半醒日复日，花开花落年复年</p>
+            <nav class="site-nav">
+                <a href="index.html" class="nav-link">首页</a>
+                <a href="about.html" class="nav-link">关于</a>
+                <a href="iptv.html" class="nav-link">IPTV</a>
+                <a href="news.html" class="nav-link active">新闻</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container news-wrap">
+            <div class="news-toolbar">
+                <div style="flex:1; min-width:220px;"></div>
+                <button class="news-btn news-btn-ghost" id="addBtn">➕ 添加频道</button>
+            </div>
+
+            <div class="news-tabs" id="tabs">
+                <button class="news-tab active" data-cat="all">全部</button>
+                <button class="news-tab" data-cat="taiwan">台湾</button>
+                <button class="news-tab" data-cat="hk">香港</button>
+                <button class="news-tab" data-cat="intl">国际中文</button>
+                <button class="news-tab" data-cat="custom">自定义</button>
+            </div>
+
+            <div class="news-empty" id="empty">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="15" rx="2"/><path d="M17 2l-5 5-5-5"/></svg>
+                <h3>暂无频道</h3>
+                <p>点击「添加频道」加入你想看的 YouTube 官方新闻直播。先用 CGTN 示例测试是否能正常播放。</p>
+            </div>
+            <div class="news-grid" id="grid"></div>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <p> 秋暑恍惚间 · 与月和兄之缘</p>
+    </footer>
+
+    <div class="news-player" id="playerOverlay">
+        <div class="news-player-header">
+            <div class="news-player-title" id="playerTitle">频道</div>
+            <button class="news-btn news-btn-ghost" id="prevBtn" style="padding:8px 12px;font-size:16px" title="上一个" onclick="switchNewsChannel(-1)">←</button><button class="news-btn news-btn-ghost" id="nextBtn" style="padding:8px 12px;font-size:16px" title="下一个" onclick="switchNewsChannel(1)">→</button><button class="news-btn news-btn-ghost" id="closePlayer">✕ 关闭</button>
+        </div>
+        <div class="news-player-body">
+            <iframe id="ytFrame" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+    </div>
+
+    <div class="news-modal-backdrop" id="modalBackdrop">
+        <div class="news-modal">
+            <h3>添加 YouTube 频道</h3>
+            <input type="text" class="news-input" id="chName" placeholder="频道名称，如：东森新闻">
+            <select class="news-input" id="chCategory">
+                <option value="taiwan">台湾</option>
+                <option value="hk">香港</option>
+                <option value="intl">国际中文</option>
+                <option value="custom">自定义</option>
+            </select>
+            <input type="text" class="news-input" id="chId" placeholder="频道 ID（UC开头）或 YouTube 直播视频链接">
+            <button class="news-btn" id="saveChBtn">添加</button>
+            <p class="news-hint">支持两种方式：<br>1. 频道 ID（以 <code>UC</code> 开头的 24 位字符串），例如 <code>youtube.com/channel/UCxxxxxxxxxxxxxxxxxxxxxxxx</code>；<br>2. 直播视频链接，例如 <code>youtube.com/watch?v=xxxxxxxxxxx</code>。如果频道 ID 方式无法播放，用视频链接方式更稳定。</p>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'news_channels_v1';
+        const DEFAULT_CHANNELS = [
+            { name: 'CGTN', category: 'intl', id: 'UCmvymry3Z7RLCZL5tQDqnlg', note: '示例' }
+        ];
+
+        let channels = [];
+        let currentCategory = 'all';
+        const $ = id => document.getElementById(id);
+
+        async function loadDefaultChannels() {
+            try {
+                const res = await fetch('news-sources.json');
+                if (!res.ok) return [];
+                return await res.json();
+            } catch (e) { return []; }
+        }
+        function loadChannels() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                channels = raw ? JSON.parse(raw) : DEFAULT_CHANNELS.slice();
+            } catch (e) { channels = DEFAULT_CHANNELS.slice(); }
+        }
+        function saveChannels() { localStorage.setItem(STORAGE_KEY, JSON.stringify(channels)); }
+
+        function escapeHtml(s) {
+            return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
+        }
+
+        function categoryLabel(cat) {
+            return { taiwan: '台湾', hk: '香港', intl: '国际中文', custom: '自定义' }[cat] || cat;
+        }
+
+        function extractChannelId(input) {
+            input = input.trim();
+            if (/^UC[A-Za-z0-9_-]{22}$/.test(input)) return input;
+            let m = input.match(/youtube\.com\/channel\/([A-Za-z0-9_-]+)/);
+            if (m) return m[1];
+            m = input.match(/[?&]v=([A-Za-z0-9_-]{11})/);
+            if (m) return m[1];
+            m = input.match(/youtu\.be\/([A-Za-z0-9_-]{11})/);
+            if (m) return m[1];
+            if (/^[A-Za-z0-9_-]{11}$/.test(input)) return input;
+            return null;
+        }
+
+        function render() {
+            let list = channels;
+            if (currentCategory !== 'all') list = list.filter(c => c.category === currentCategory);
+            const grid = $('grid'); const empty = $('empty');
+            if (!list.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+            empty.style.display = 'none';
+            grid.innerHTML = list.map((c, idx) => `
+                <div class="news-card" data-idx="${idx}" title="${escapeHtml(c.name)}">
+                    <div class="news-thumb">📺</div>
+                    <div class="news-info">
+                        <div class="news-name">${escapeHtml(c.name)}</div>
+                        <div class="news-category">${categoryLabel(c.category)} ${c.note ? '· ' + escapeHtml(c.note) : ''}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function playChannel(ch) {
+            currentChannel = ch;
+            $('playerTitle').textContent = ch.name;
+            let url;
+            if (ch.id.startsWith('UC') && ch.id.length === 24) {
+                url = 'https://www.youtube.com/embed/live_stream?channel=' + encodeURIComponent(ch.id);
+            } else {
+                url = 'https://www.youtube.com/embed/' + encodeURIComponent(ch.id);
+            }
+            $('ytFrame').src = url;
+            $('playerOverlay').classList.add('active');
+        }
+
+        $('tabs').addEventListener('click', e => {
+            if (!e.target.classList.contains('news-tab')) return;
+            document.querySelectorAll('.news-tab').forEach(t => t.classList.remove('active'));
+            e.target.classList.add('active');
+            currentCategory = e.target.dataset.cat;
+            render();
+        });
+
+        $('grid').addEventListener('click', e => {
+            const card = e.target.closest('.news-card');
+            if (card) playChannel(channels[parseInt(card.dataset.idx, 10)]);
+        });
+
+        $('closePlayer').addEventListener('click', () => {
+            $('playerOverlay').classList.remove('active');
+            $('ytFrame').src = '';
+        });
+
+        $('addBtn').addEventListener('click', () => $('modalBackdrop').classList.add('active'));
+        $('modalBackdrop').addEventListener('click', e => { if (e.target === $('modalBackdrop')) $('modalBackdrop').classList.remove('active'); });
+
+        $('saveChBtn').addEventListener('click', () => {
+            const name = $('chName').value.trim();
+            const category = $('chCategory').value;
+            const id = extractChannelId($('chId').value.trim());
+            if (!name || !id) { alert('请输入频道名称和有效的 YouTube 频道 ID 或视频链接'); return; }
+            channels.push({ name, category, id, note: '自定义' });
+            saveChannels(); render();
+            $('chName').value = ''; $('chId').value = '';
+            $('modalBackdrop').classList.remove('active');
+        });
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape' && $('playerOverlay').classList.contains('active')) {
+                $('playerOverlay').classList.remove('active'); $('ytFrame').src = '';
+            }
+        });
+
+        (async () => {
+            const defs = await loadDefaultChannels();
+            if (defs.length > 0) channels = defs;
+            render();
+        })();
+    
+        function switchNewsChannel(dir) {
+            var list = channels;
+            if (!list.length) return;
+            if (!currentChannel) { playChannel(list[0]); return; }
+            for (var i = 0; i < list.length; i++) {
+                if (list[i].name === currentChannel.name) {
+                    var dest = (i + dir + list.length) % list.length;
+                    playChannel(list[dest]);
+                    return;
+                }
+            }
+            playChannel(list[0]);
+        }
+</script>
+</body>
+</html>
