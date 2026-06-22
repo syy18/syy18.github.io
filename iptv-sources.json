@@ -1,5 +1,14 @@
 [
-  { "name": "裤佬TV", "url": "https://gh-proxy.org/https://raw.githubusercontent.com/Jsnzkpg/Jsnzkpg/Jsnzkpg/Jsnzkpg1.m3u" },
-  { "name": "YanG", "url": "https://tv.iill.top/m3u/Gather" },
-  { "name": "冰茶", "url": "https://188766.xyz/itv" }
+  {
+    "name": "裤佬TV",
+    "url": "https://gh-proxy.org/https://raw.githubusercontent.com/Jsnzkpg/Jsnzkpg/Jsnzkpg/Jsnzkpg1.m3u"
+  },
+  {
+    "name": "YanG",
+    "url": "https://tv.iill.top/m3u/Gather"
+  },
+  {
+    "name": "冰茶",
+    "url": "https://188766.xyz/itv"
+  }
 ]
