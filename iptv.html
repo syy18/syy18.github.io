@@ -487,7 +487,7 @@ function playHls(video, originalUrl, proxyUrl) {
 }
 
 function loadHlsInstance(video, sourceUrl, originalUrl) {
-  var hlsConfig = { enableWorker: true, lowLatencyMode: false, maxBufferLength: 30, maxMaxBufferLength: 60 };
+  var hlsConfig = { enableWorker: true, lowLatencyMode: false, maxBufferLength: 60, maxMaxBufferLength: 120, liveSyncDurationCount: 3, liveMaxLatencyDurationCount: 6 };
   hlsInstance = new Hls(hlsConfig);
   hlsInstance.loadSource(sourceUrl);
   hlsInstance.attachMedia(video);
