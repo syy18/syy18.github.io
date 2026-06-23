@@ -22,10 +22,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC
 .player-controls button:hover{background:rgba(255,255,255,0.25)}
 .player-controls .channel-name{color:#fff;font-size:14px;min-width:120px;text-align:center}
 .player-controls .channel-info{color:#aaa;font-size:13px}
+.play-status{color:#ff6b6b;font-size:12px;text-align:center;padding:4px;background:#1a1a1a;display:none}
+.play-status.visible{display:block}
 .toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:14px 20px;background:#fff;border-bottom:1px solid #e0d6cb}
 .toolbar .count-badge{background:#8b7355;color:#fff;font-size:12px;padding:3px 10px;border-radius:12px;margin-left:4px}
 .search-box{flex:1;min-width:180px;max-width:320px;padding:8px 14px;border:1px solid #d0c4b6;border-radius:20px;font-size:14px;outline:none;background:#faf8f5}
 .search-box:focus{border-color:#8b7355}
+.proxy-toggle{display:flex;align-items:center;gap:6px;font-size:13px;color:#8b7355;cursor:pointer;user-select:none;padding:4px 10px;border-radius:12px;border:1px solid #d0c4b6;background:#fff;white-space:nowrap}
+.proxy-toggle:hover{background:#f0ebe4}
+.proxy-toggle.active{background:#8b7355;color:#fff;border-color:#8b7355}
 .categories{display:flex;flex-wrap:wrap;gap:6px;padding:12px 20px;border-bottom:1px solid #e0d6cb}
 .cat-btn{padding:6px 16px;border-radius:16px;border:1px solid #d0c4b6;background:#fff;color:#8b7355;cursor:pointer;font-size:13px}
 .cat-btn:hover{background:#f0ebe4}
@@ -67,6 +72,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC
 
 <div class="player-wrapper">
   <div id="video-container"><video id="video-player" controls autoplay playsinline></video></div>
+  <div class="play-status" id="play-status"></div>
   <div class="player-controls">
     <button onclick="switchChannel(-1)">◀ 上一频道</button>
     <span class="channel-name" id="current-channel-name">未选择频道</span>
@@ -81,6 +87,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC
     <span class="count-badge" id="total-count">0</span>
   </div>
   <input class="search-box" id="search-input" placeholder="🔍 搜索频道名称或分组..." oninput="doSearch()">
+  <div class="proxy-toggle" id="proxy-toggle" onclick="toggleProxy()" title="电脑端如部分频道无法播放，请开启此开关">
+    🛡️ 代理
+  </div>
 </div>
 
 <div class="categories" id="categories">
@@ -99,19 +108,74 @@ var DEFAULT_SOURCES_URL = 'https://syy18.github.io/iptv-sources.json';
 var STORAGE_KEY = 'iptv_sources_v1';
 var FAV_KEY = 'iptv_favs_v1';
 var WELCOME_KEY = 'iptv_welcomed_v1';
+var PROXY_KEY = 'iptv_use_proxy_v1';
 var allChannels = [];
 var filteredChannels = [];
 var currentCategory = 'all';
 var currentChannel = null;
 var hlsInstance = null;
 var dashInstance = null;
+var useProxy = localStorage.getItem(PROXY_KEY) === '1';
+var retryCount = 0;
+var MAX_RETRY = 2;
 
+// CORS proxies (rotate on failure)
+var CORS_PROXIES = [
+  'https://corsproxy.io/?',
+  'https://api.allorigins.win/raw?url='
+];
+var currentProxyIdx = 0;
+
+function isHttps() { return location.protocol === 'https:'; }
+function isHttpUrl(url) { return url.indexOf('http:') === 0; }
+
+function proxifyUrl(url) {
+  if (useProxy && isHttps() && isHttpUrl(url)) {
+    return CORS_PROXIES[currentProxyIdx] + encodeURIComponent(url);
+  }
+  return url;
+}
+
+function cycleProxy() {
+  currentProxyIdx = (currentProxyIdx + 1) % CORS_PROXIES.length;
+}
+
+// Init proxy toggle UI
+(function() {
+  var el = document.getElementById('proxy-toggle');
+  if (useProxy) el.classList.add('active');
+})();
+
+function toggleProxy() {
+  useProxy = !useProxy;
+  localStorage.setItem(PROXY_KEY, useProxy ? '1' : '0');
+  var el = document.getElementById('proxy-toggle');
+  el.classList.toggle('active', useProxy);
+  // Replay current channel with new setting
+  if (currentChannel) playChannel(currentChannel);
+}
+
+function showStatus(msg, isError) {
+  var el = document.getElementById('play-status');
+  el.textContent = msg;
+  el.style.color = isError ? '#ff6b6b' : '#8bc34a';
+  el.classList.add('visible');
+  if (!isError) setTimeout(function() { el.classList.remove('visible'); }, 3000);
+}
+
+function hideStatus() {
+  document.getElementById('play-status').classList.remove('visible');
+}
+
+// Welcome overlay
 (function() {
   if (!localStorage.getItem(WELCOME_KEY)) {
     var div = document.createElement('div');
     div.className = 'welcome-overlay';
     div.id = 'welcome-overlay';
-    div.innerHTML = '<div class="welcome-card"><h2>📺 欢迎来到电视墙</h2><p>🎯 点击频道卡片即可播放</p><p>◀ → 方向键切换频道</p><p>⭐ 收藏你喜欢的频道</p><p>🔍 搜索频道名称或分组</p><p style="margin-top:12px;color:#b0a090;font-size:12px">频道数据从云端自动同步</p><button class="btn" onclick="dismissWelcome()">开始看电视</button></div>';
+    var isPC = !('ontouchstart' in window);
+    var proxyTip = isPC ? '<p style="margin-top:8px;color:#e67e22;font-size:13px">💻 电脑用户：如遇频道无法播放，请点击工具栏的「🛡️ 代理」开关</p>' : '';
+    div.innerHTML = '<div class="welcome-card"><h2>📺 欢迎来到电视墙</h2><p>🎯 点击频道卡片即可播放</p><p>◀ → 方向键切换频道</p><p>⭐ 收藏你喜欢的频道</p><p>🔍 搜索频道名称或分组</p>' + proxyTip + '<p style="margin-top:12px;color:#b0a090;font-size:12px">频道数据从云端自动同步</p><button class="btn" onclick="dismissWelcome()">开始看电视</button></div>';
     document.body.appendChild(div);
   }
 })();
@@ -254,34 +318,94 @@ function switchCategory(cat) {
 function playChannel(ch) {
   if (!ch) return;
   currentChannel = ch;
+  retryCount = 0;
   if (hlsInstance) { try { hlsInstance.destroy(); } catch(e){} hlsInstance = null; }
   if (dashInstance) { try { dashInstance.reset(); } catch(e){} dashInstance = null; }
   var video = document.getElementById('video-player');
+  video.removeAttribute('src');
+  video.load();
   document.getElementById('current-channel-name').textContent = ch.name;
   var url = ch.url;
   if (!url) { video.src = ''; return; }
+  
+  var playUrl = proxifyUrl(url);
+  
   if (url.indexOf('.m3u8') >= 0) {
     if (Hls.isSupported()) {
-      hlsInstance = new Hls();
-      hlsInstance.loadSource(url);
-      hlsInstance.attachMedia(video);
-      hlsInstance.on(Hls.Events.MANIFEST_PARSED, function() { video.play().catch(function(){}); });
-      hlsInstance.on(Hls.Events.ERROR, function(event, data) {
-        if (data.fatal) {
-          hlsInstance.destroy(); hlsInstance = null;
-          video.src = url; video.play().catch(function(){});
-        }
-      });
+      playHls(video, url, playUrl);
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      video.src = url; video.play().catch(function(){});
+      video.src = playUrl;
+      video.play().catch(function(){});
     }
   } else if (url.indexOf('.mpd') >= 0) {
-    try { dashInstance = dashjs.MediaPlayer().create(); dashInstance.initialize(video, url, true); } catch(e) { console.warn('dash fail'); }
+    try { dashInstance = dashjs.MediaPlayer().create(); dashInstance.initialize(video, playUrl, true); } catch(e) { console.warn('dash fail'); }
   } else {
-    video.src = url; video.play().catch(function(){});
+    video.src = playUrl;
+    video.play().catch(function(){});
   }
   updatePosition();
   renderChannelGrid();
+}
+
+function playHls(video, originalUrl, proxyUrl) {
+  if (hlsInstance) { try { hlsInstance.destroy(); } catch(e){} hlsInstance = null; }
+  
+  var hlsConfig = {
+    enableWorker: true,
+    lowLatencyMode: false,
+    maxBufferLength: 30,
+    maxMaxBufferLength: 60
+  };
+  
+  // Add CORS proxy support via xhrSetup
+  if (useProxy && isHttps() && isHttpUrl(originalUrl)) {
+    hlsConfig.xhrSetup = function(xhr, url) {
+      var pUrl = proxifyUrl(url);
+      if (pUrl !== url) {
+        xhr.open(xhr._method || 'GET', pUrl, true);
+      }
+    };
+  }
+  
+  hlsInstance = new Hls(hlsConfig);
+  hlsInstance.loadSource(proxyUrl);
+  hlsInstance.attachMedia(video);
+  
+  hlsInstance.on(Hls.Events.MANIFEST_PARSED, function() {
+    video.play().catch(function(){});
+  });
+  
+  hlsInstance.on(Hls.Events.ERROR, function(event, data) {
+    if (data.fatal) {
+      if (data.type === Hls.ErrorTypes.NETWORK_ERROR && retryCount < MAX_RETRY) {
+        // Network error: try switching proxy or retry
+        retryCount++;
+        showStatus('🔄 重试中... (' + retryCount + '/' + MAX_RETRY + ')', false);
+        cycleProxy();
+        setTimeout(function() {
+          playHls(video, originalUrl, proxifyUrl(originalUrl));
+        }, 1000);
+      } else if (data.type === Hls.ErrorTypes.NETWORK_ERROR && !useProxy && isHttps() && isHttpUrl(originalUrl)) {
+        // Network error on HTTPS + HTTP stream: auto-enable proxy
+        showStatus('🛡️ 自动开启代理重试...', false);
+        useProxy = true;
+        localStorage.setItem(PROXY_KEY, '1');
+        document.getElementById('proxy-toggle').classList.add('active');
+        retryCount = 0;
+        setTimeout(function() {
+          playHls(video, originalUrl, proxifyUrl(originalUrl));
+        }, 500);
+      } else {
+        hlsInstance.destroy();
+        hlsInstance = null;
+        // Fallback: try direct src
+        video.src = proxyUrl;
+        video.play().catch(function() {
+          showStatus('❌ 无法播放此频道（可能需要开启代理）', true);
+        });
+      }
+    }
+  });
 }
 
 function playChannelByIndex(idx) {
