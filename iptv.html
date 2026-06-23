@@ -179,7 +179,12 @@ function saveProxyConfig() {
 
 function isHttps() { return location.protocol === 'https:'; }
 function isHttpUrl(url) { return url.indexOf('http:') === 0; }
-function needProxy(url) { return proxyConfig.enabled && isHttps() && isHttpUrl(url); }
+function needProxy(url) {
+  // 本地服务器模式：始终代理（解决CORS跨域）
+  if (location.hostname === '127.0.0.1' || location.hostname === 'localhost') return isHttpUrl(url);
+  // GitHub Pages模式：仅HTTPS页面代理HTTP流
+  return proxyConfig.enabled && isHttps() && isHttpUrl(url);
+}
 
 function proxifyUrl(url) {
   if (!needProxy(url)) return url;
