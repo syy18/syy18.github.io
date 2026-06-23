@@ -1,5 +1,5 @@
 [
-  {"name":"裤佬TV","url":"https://gh-proxy.org/https://raw.githubusercontent.com/Jsnzkpg/Jsnzkpg/Jsnzkpg/Jsnzkpg1.m3u"},
-  {"name":"YanG","url":"https://tv.iill.top/m3u/Gather"},
-  {"name":"冰茶","url":"https://188766.xyz/itv"}
+  { "name": "vbskycn/iptv（央视+卫视+地方台）", "url": "https://raw.githubusercontent.com/vbskycn/iptv/master/tv/iptv4.m3u" },
+  { "name": "裤佬TV", "url": "https://gh-proxy.org/https://raw.githubusercontent.com/Jsnzkpg/Jsnzkpg/Jsnzkpg/Jsnzkpg1.m3u" },
+  { "name": "iptv-org（全球频道）", "url": "https://iptv-org.github.io/iptv/index.country.m3u" }
 ]
