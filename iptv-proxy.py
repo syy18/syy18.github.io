@@ -1,48 +1,18 @@
 #!/usr/bin/env python3
-"""IPTV 本地服务器 v7 - 连接池加速 + 流式传输"""
-import http.server, socketserver, urllib.parse
+"""IPTV 本地服务器 v7 - 连接池 + keep-alive"""
+import http.server, socketserver, urllib.request, urllib.error, urllib.parse
 import os, sys, ssl, socket, time, threading
 from http.client import HTTPConnection, HTTPSConnection
 
 PORT = int(sys.argv[1]) if len(sys.argv)>1 else 18888
+HOST = sys.argv[2] if len(sys.argv)>2 else '0.0.0.0'
 REPO = os.path.dirname(os.path.abspath(__file__))
 ssl_ctx = ssl.create_default_context()
 ssl_ctx.check_hostname = False
 ssl_ctx.verify_mode = ssl.CERT_NONE
 
-# 全局基础URL
 _last_base = {'url': None}
 _lock = threading.Lock()
-
-# HTTP连接池
-class ConnectionPool:
-    def __init__(self):
-        self._conns = {}
-        self._lock = threading.Lock()
-
-    def get(self, host, port, https=False):
-        key = (host, port, https)
-        with self._lock:
-            if key in self._conns:
-                conn = self._conns.pop(key)
-                try:
-                    conn.request('HEAD', '/')
-                    return conn
-                except:
-                    pass
-        if https:
-            conn = HTTPSConnection(host, port, timeout=15, context=ssl_ctx)
-        else:
-            conn = HTTPConnection(host, port, timeout=15)
-        return conn
-
-    def put(self, host, port, https, conn):
-        key = (host, port, https)
-        with self._lock:
-            if len(self._conns) < 20:
-                self._conns[key] = conn
-
-pool = ConnectionPool()
 
 class H(http.server.BaseHTTPRequestHandler):
     def log_message(self, fmt, *args):
@@ -54,7 +24,7 @@ class H(http.server.BaseHTTPRequestHandler):
 
     def do_GET(self):
         p = self.path.split('?')[0]
-        if p=='/' or p=='/status': self._json({"ok":True,"v":7}); return
+        if p=='/' or p=='/status': self._json({"ok":True,"v":8}); return
         if p.startswith('/proxy/'): self._proxy(); return
         self._static(p)
 
@@ -72,7 +42,7 @@ class H(http.server.BaseHTTPRequestHandler):
         self.send_header('Content-Length',len(d)); self.end_headers(); self.wfile.write(d)
 
     def _proxy(self):
-        enc=self.path[7:]  # /proxy/
+        enc=self.path[7:]
         try: target=urllib.parse.unquote(enc)
         except: self.send_error(400); return
 
@@ -91,36 +61,25 @@ class H(http.server.BaseHTTPRequestHandler):
                 self.log_message("BASE = %s", target[:90])
 
         try:
+            req=urllib.request.Request(target)
+            req.add_header('User-Agent','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36')
             p=urllib.parse.urlparse(target)
-            https=p.scheme=='https'
-            host=p.port and p.hostname or p.hostname
-            port=p.port or (443 if https else 80)
-            path=p.path or '/'
-            if p.query: path+='?'+p.query
-
-            conn=pool.get(p.hostname, port, https)
-            headers={
-                'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                'Referer':f'{p.scheme}://{p.netloc}/',
-                'Origin':f'{p.scheme}://{p.netloc}',
-                'Host':p.netloc
-            }
-            conn.request('GET', path, headers=headers)
-            r=conn.getresponse()
-
-            # 读取响应体
+            req.add_header('Referer',f'{p.scheme}://{p.netloc}/')
+            req.add_header('Origin',f'{p.scheme}://{p.netloc}')
+            r=urllib.request.urlopen(req,timeout=10,context=ssl_ctx)
             data=r.read()
             ct=r.headers.get('Content-Type','application/octet-stream')
             if target.endswith('.m3u8') or 'mpegurl' in ct.lower(): ct='application/vnd.apple.mpegurl'
-
-            self.send_response(r.status); self._cors()
+            self.send_response(200); self._cors()
             self.send_header('Content-Type',ct); self.send_header('Content-Length',len(data))
             self.end_headers(); self.wfile.write(data)
-            pool.put(p.hostname, port, https, conn)
             self.log_message("OK %d",len(data))
-        except Exception as e:
-            self.log_message("ERR %s",str(e)[:60])
-            try: self.send_error(502)
+        except urllib.error.HTTPError as e: self.send_error(e.code)
+        except urllib.error.URLError: self.send_error(502)
+        except socket.timeout: self.send_error(504)
+        except (ConnectionAbortedError,BrokenPipeError,OSError): pass
+        except:
+            try: self.send_error(500)
             except: pass
 
     def _cors(self):
@@ -138,7 +97,10 @@ class S(socketserver.ThreadingMixIn, http.server.HTTPServer):
     daemon_threads=True; allow_reuse_address=True
 
 if __name__=="__main__":
-    srv=S(('127.0.0.1',PORT),H)
-    print(f"📺 IPTV v7 → http://127.0.0.1:{PORT}/iptv.html")
+    import socket as _sock
+    srv=S((HOST,PORT),H)
+    _ip=_sock.gethostbyname(_sock.gethostname())
+    print(f"📺 IPTV v8 → http://{_ip}:{PORT}/iptv.html")
+    print(f"   局域网设备访问: http://{_ip}:{PORT}/iptv.html")
     try: srv.serve_forever()
     except KeyboardInterrupt: srv.server_close()
