@@ -30,7 +30,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC
 .search-box:focus{border-color:#8b7355}
 .proxy-toggle{display:flex;align-items:center;gap:6px;font-size:13px;color:#8b7355;cursor:pointer;user-select:none;padding:4px 10px;border-radius:12px;border:1px solid #d0c4b6;background:#fff;white-space:nowrap}
 .proxy-toggle:hover{background:#f0ebe4}
-.proxy-toggle.active{background:#8b7355;color:#fff;border-color:#8b7355}
+.proxy-toggle.active{background:#27ae60;color:#fff;border-color:#27ae60}
+.proxy-toggle.local{background:#e67e22;color:#fff;border-color:#e67e22}
 .categories{display:flex;flex-wrap:wrap;gap:6px;padding:12px 20px;border-bottom:1px solid #e0d6cb}
 .cat-btn{padding:6px 16px;border-radius:16px;border:1px solid #d0c4b6;background:#fff;color:#8b7355;cursor:pointer;font-size:13px}
 .cat-btn:hover{background:#f0ebe4}
@@ -53,11 +54,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC
 .empty-state{text-align:center;padding:60px 20px;color:#b0a090}
 .empty-state .icon{font-size:48px;margin-bottom:12px}
 .welcome-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;z-index:9999}
-.welcome-card{background:#fff;border-radius:16px;padding:32px;max-width:420px;width:90%;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,0.2)}
+.welcome-card{background:#fff;border-radius:16px;padding:32px;max-width:440px;width:90%;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,0.2)}
 .welcome-card h2{color:#5a4a3a;margin-bottom:10px}
 .welcome-card p{color:#8b7355;font-size:14px;line-height:1.7;margin-bottom:8px}
 .welcome-card .btn{display:inline-block;margin-top:16px;padding:10px 32px;background:#8b7355;color:#fff;border:none;border-radius:24px;font-size:15px;cursor:pointer}
 .welcome-card .btn:hover{background:#7a6347}
+.proxy-modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:9998}
+.proxy-modal.show{display:flex}
+.proxy-card{background:#fff;border-radius:16px;padding:24px;max-width:400px;width:90%;box-shadow:0 8px 30px rgba(0,0,0,0.2)}
+.proxy-card h3{color:#5a4a3a;margin-bottom:12px;font-size:16px}
+.proxy-card label{display:block;font-size:13px;color:#8b7355;margin-bottom:4px}
+.proxy-card input{width:100%;padding:8px 12px;border:1px solid #d0c4b6;border-radius:8px;font-size:14px;margin-bottom:12px;outline:none}
+.proxy-card input:focus{border-color:#8b7355}
+.proxy-card .btns{display:flex;gap:8px;justify-content:flex-end}
+.proxy-card .btns button{padding:8px 20px;border-radius:8px;border:none;cursor:pointer;font-size:14px}
+.proxy-card .btn-primary{background:#8b7355;color:#fff}
+.proxy-card .btn-secondary{background:#f0ebe4;color:#8b7355}
+.proxy-card .status-text{font-size:12px;margin-top:8px}
 @media(max-width:600px){.channel-grid{grid-template-columns:repeat(2,1fr);gap:8px;padding:12px}.toolbar{padding:10px 14px}.search-box{min-width:140px}.nav-bar{padding:10px 14px;gap:10px;flex-wrap:wrap}}
 </style>
 </head>
@@ -87,7 +100,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC
     <span class="count-badge" id="total-count">0</span>
   </div>
   <input class="search-box" id="search-input" placeholder="🔍 搜索频道名称或分组..." oninput="doSearch()">
-  <div class="proxy-toggle" id="proxy-toggle" onclick="toggleProxy()" title="电脑端如部分频道无法播放，请开启此开关">
+  <div class="proxy-toggle" id="proxy-toggle" onclick="toggleProxy()" title="频道播放不了？点击开启代理">
     🛡️ 代理
   </div>
 </div>
@@ -103,56 +116,171 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC
 
 <div id="channel-grid" class="channel-grid"></div>
 
+<!-- 代理设置弹窗 -->
+<div class="proxy-modal" id="proxy-modal">
+  <div class="proxy-card">
+    <h3>🛡️ 代理设置</h3>
+    <label>代理模式</label>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <button id="mode-local" class="btn-secondary" onclick="setProxyMode('local')" style="flex:1;padding:8px;border-radius:8px;border:2px solid #d0c4b6;cursor:pointer;font-size:13px;background:#fff">🏠 本地代理（推荐）</button>
+      <button id="mode-cors" class="btn-secondary" onclick="setProxyMode('cors')" style="flex:1;padding:8px;border-radius:8px;border:2px solid #d0c4b6;cursor:pointer;font-size:13px;background:#fff">☁️ 公网CORS</button>
+    </div>
+    <div id="local-proxy-section">
+      <label>本地代理地址</label>
+      <input id="local-proxy-url" placeholder="http://127.0.0.1:18888" value="http://127.0.0.1:18888">
+      <div id="local-proxy-status" class="status-text"></div>
+      <p style="font-size:12px;color:#b0a090;margin-top:4px">
+        💡 启动命令: <code style="background:#f0ebe4;padding:2px 6px;border-radius:4px">python iptv-proxy.py</code>
+      </p>
+    </div>
+    <div id="cors-proxy-section" style="display:none">
+      <label>CORS代理地址</label>
+      <input id="cors-proxy-url" placeholder="https://corsproxy.io/?" value="https://corsproxy.io/?">
+      <p style="font-size:12px;color:#b0a090;margin-top:4px">
+        公网代理较慢且不稳定，推荐优先使用本地代理
+      </p>
+    </div>
+    <div class="btns">
+      <button class="btn-secondary" onclick="closeProxyModal()">取消</button>
+      <button class="btn-primary" onclick="saveProxy()">确定</button>
+    </div>
+  </div>
+</div>
+
 <script>
 var DEFAULT_SOURCES_URL = 'https://syy18.github.io/iptv-sources.json';
 var STORAGE_KEY = 'iptv_sources_v1';
 var FAV_KEY = 'iptv_favs_v1';
 var WELCOME_KEY = 'iptv_welcomed_v1';
-var PROXY_KEY = 'iptv_use_proxy_v1';
+var PROXY_KEY = 'iptv_proxy_v1';
 var allChannels = [];
 var filteredChannels = [];
 var currentCategory = 'all';
 var currentChannel = null;
 var hlsInstance = null;
 var dashInstance = null;
-var useProxy = localStorage.getItem(PROXY_KEY) === '1';
 var retryCount = 0;
 var MAX_RETRY = 2;
 
-// CORS proxies (rotate on failure)
-var CORS_PROXIES = [
-  'https://corsproxy.io/?',
-  'https://api.allorigins.win/raw?url='
-];
-var currentProxyIdx = 0;
+// 代理配置
+var proxyConfig = loadProxyConfig();
+
+function loadProxyConfig() {
+  try {
+    var saved = JSON.parse(localStorage.getItem(PROXY_KEY));
+    if (saved && saved.mode) return saved;
+  } catch(e) {}
+  return { enabled: false, mode: 'local', localUrl: 'http://127.0.0.1:18888', corsUrl: 'https://corsproxy.io/?' };
+}
+
+function saveProxyConfig() {
+  localStorage.setItem(PROXY_KEY, JSON.stringify(proxyConfig));
+}
 
 function isHttps() { return location.protocol === 'https:'; }
 function isHttpUrl(url) { return url.indexOf('http:') === 0; }
+function needProxy(url) { return proxyConfig.enabled && isHttps() && isHttpUrl(url); }
 
 function proxifyUrl(url) {
-  if (useProxy && isHttps() && isHttpUrl(url)) {
-    return CORS_PROXIES[currentProxyIdx] + encodeURIComponent(url);
+  if (!needProxy(url)) return url;
+  if (proxyConfig.mode === 'local') {
+    return proxyConfig.localUrl + '/proxy/' + encodeURIComponent(url);
+  } else {
+    return proxyConfig.corsUrl + encodeURIComponent(url);
   }
-  return url;
 }
 
-function cycleProxy() {
-  currentProxyIdx = (currentProxyIdx + 1) % CORS_PROXIES.length;
-}
-
-// Init proxy toggle UI
+// 代理按钮 UI
 (function() {
   var el = document.getElementById('proxy-toggle');
-  if (useProxy) el.classList.add('active');
+  if (proxyConfig.enabled) {
+    el.classList.add(proxyConfig.mode === 'local' ? 'local' : 'active');
+  }
 })();
 
 function toggleProxy() {
-  useProxy = !useProxy;
-  localStorage.setItem(PROXY_KEY, useProxy ? '1' : '0');
-  var el = document.getElementById('proxy-toggle');
-  el.classList.toggle('active', useProxy);
-  // Replay current channel with new setting
+  if (!proxyConfig.enabled) {
+    // 首次开启 → 弹出设置
+    openProxyModal();
+  } else {
+    // 已开启 → 关闭
+    proxyConfig.enabled = false;
+    saveProxyConfig();
+    updateProxyUI();
+    if (currentChannel) playChannel(currentChannel);
+  }
+}
+
+function openProxyModal() {
+  document.getElementById('proxy-modal').classList.add('show');
+  setProxyMode(proxyConfig.mode || 'local');
+  document.getElementById('local-proxy-url').value = proxyConfig.localUrl || 'http://127.0.0.1:18888';
+  document.getElementById('cors-proxy-url').value = proxyConfig.corsUrl || 'https://corsproxy.io/?';
+  checkLocalProxy();
+}
+
+function closeProxyModal() {
+  document.getElementById('proxy-modal').classList.remove('show');
+}
+
+function setProxyMode(mode) {
+  proxyConfig.mode = mode;
+  var localBtn = document.getElementById('mode-local');
+  var corsBtn = document.getElementById('mode-cors');
+  var localSec = document.getElementById('local-proxy-section');
+  var corsSec = document.getElementById('cors-proxy-section');
+  if (mode === 'local') {
+    localBtn.style.borderColor = '#8b7355'; localBtn.style.background = '#f0ebe4';
+    corsBtn.style.borderColor = '#d0c4b6'; corsBtn.style.background = '#fff';
+    localSec.style.display = 'block'; corsSec.style.display = 'none';
+  } else {
+    corsBtn.style.borderColor = '#8b7355'; corsBtn.style.background = '#f0ebe4';
+    localBtn.style.borderColor = '#d0c4b6'; localBtn.style.background = '#fff';
+    localSec.style.display = 'none'; corsSec.style.display = 'block';
+  }
+}
+
+function checkLocalProxy() {
+  var url = document.getElementById('local-proxy-url').value.replace(/\/$/, '') + '/status';
+  var el = document.getElementById('local-proxy-status');
+  el.textContent = '检测中...'; el.style.color = '#999';
+  fetch(url, { mode: 'cors', signal: AbortSignal.timeout(3000) })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.status === 'ok') {
+        el.textContent = '✅ 本地代理运行中'; el.style.color = '#27ae60';
+      } else {
+        el.textContent = '⚠️ 代理响应异常'; el.style.color = '#e67e22';
+      }
+    })
+    .catch(function() {
+      el.textContent = '❌ 本地代理未启动，请先运行 python iptv-proxy.py'; el.style.color = '#e74c3c';
+    });
+}
+
+function saveProxy() {
+  if (proxyConfig.mode === 'local') {
+    proxyConfig.localUrl = document.getElementById('local-proxy-url').value.replace(/\/$/, '');
+  } else {
+    proxyConfig.corsUrl = document.getElementById('cors-proxy-url').value;
+  }
+  proxyConfig.enabled = true;
+  saveProxyConfig();
+  updateProxyUI();
+  closeProxyModal();
+  showStatus('🛡️ 代理已开启 (' + (proxyConfig.mode === 'local' ? '本地' : 'CORS') + ')', false);
   if (currentChannel) playChannel(currentChannel);
+}
+
+function updateProxyUI() {
+  var el = document.getElementById('proxy-toggle');
+  el.classList.remove('active', 'local');
+  if (proxyConfig.enabled) {
+    el.classList.add(proxyConfig.mode === 'local' ? 'local' : 'active');
+    el.textContent = '🛡️ 代理 ' + (proxyConfig.mode === 'local' ? '(本地)' : '(CORS)');
+  } else {
+    el.textContent = '🛡️ 代理';
+  }
 }
 
 function showStatus(msg, isError) {
@@ -174,7 +302,7 @@ function hideStatus() {
     div.className = 'welcome-overlay';
     div.id = 'welcome-overlay';
     var isPC = !('ontouchstart' in window);
-    var proxyTip = isPC ? '<p style="margin-top:8px;color:#e67e22;font-size:13px">💻 电脑用户：如遇频道无法播放，请点击工具栏的「🛡️ 代理」开关</p>' : '';
+    var proxyTip = isPC ? '<p style="margin-top:8px;color:#e67e22;font-size:13px">💻 电脑用户：频道播放不了？点工具栏「🛡️ 代理」，先运行 <code>python iptv-proxy.py</code></p>' : '';
     div.innerHTML = '<div class="welcome-card"><h2>📺 欢迎来到电视墙</h2><p>🎯 点击频道卡片即可播放</p><p>◀ → 方向键切换频道</p><p>⭐ 收藏你喜欢的频道</p><p>🔍 搜索频道名称或分组</p>' + proxyTip + '<p style="margin-top:12px;color:#b0a090;font-size:12px">频道数据从云端自动同步</p><button class="btn" onclick="dismissWelcome()">开始看电视</button></div>';
     document.body.appendChild(div);
   }
@@ -327,9 +455,9 @@ function playChannel(ch) {
   document.getElementById('current-channel-name').textContent = ch.name;
   var url = ch.url;
   if (!url) { video.src = ''; return; }
-  
+
   var playUrl = proxifyUrl(url);
-  
+
   if (url.indexOf('.m3u8') >= 0) {
     if (Hls.isSupported()) {
       playHls(video, url, playUrl);
@@ -349,59 +477,51 @@ function playChannel(ch) {
 
 function playHls(video, originalUrl, proxyUrl) {
   if (hlsInstance) { try { hlsInstance.destroy(); } catch(e){} hlsInstance = null; }
-  
+
   var hlsConfig = {
     enableWorker: true,
     lowLatencyMode: false,
     maxBufferLength: 30,
     maxMaxBufferLength: 60
   };
-  
-  // Add CORS proxy support via xhrSetup
-  if (useProxy && isHttps() && isHttpUrl(originalUrl)) {
+
+  // 本地代理模式：通过 xhrSetup 让所有请求走代理
+  if (proxyConfig.enabled && isHttpUrl(originalUrl)) {
     hlsConfig.xhrSetup = function(xhr, url) {
       var pUrl = proxifyUrl(url);
       if (pUrl !== url) {
-        xhr.open(xhr._method || 'GET', pUrl, true);
+        // 重新 open 到代理地址
+        xhr.open('GET', pUrl, true);
       }
     };
   }
-  
+
   hlsInstance = new Hls(hlsConfig);
   hlsInstance.loadSource(proxyUrl);
   hlsInstance.attachMedia(video);
-  
+
   hlsInstance.on(Hls.Events.MANIFEST_PARSED, function() {
     video.play().catch(function(){});
   });
-  
+
   hlsInstance.on(Hls.Events.ERROR, function(event, data) {
     if (data.fatal) {
       if (data.type === Hls.ErrorTypes.NETWORK_ERROR && retryCount < MAX_RETRY) {
-        // Network error: try switching proxy or retry
         retryCount++;
         showStatus('🔄 重试中... (' + retryCount + '/' + MAX_RETRY + ')', false);
-        cycleProxy();
         setTimeout(function() {
           playHls(video, originalUrl, proxifyUrl(originalUrl));
-        }, 1000);
-      } else if (data.type === Hls.ErrorTypes.NETWORK_ERROR && !useProxy && isHttps() && isHttpUrl(originalUrl)) {
-        // Network error on HTTPS + HTTP stream: auto-enable proxy
-        showStatus('🛡️ 自动开启代理重试...', false);
-        useProxy = true;
-        localStorage.setItem(PROXY_KEY, '1');
-        document.getElementById('proxy-toggle').classList.add('active');
-        retryCount = 0;
-        setTimeout(function() {
-          playHls(video, originalUrl, proxifyUrl(originalUrl));
-        }, 500);
+        }, 1500);
+      } else if (data.type === Hls.ErrorTypes.NETWORK_ERROR && !proxyConfig.enabled && isHttps() && isHttpUrl(originalUrl)) {
+        // 自动弹出代理设置
+        showStatus('🛡️ 检测到需要代理，正在打开设置...', false);
+        setTimeout(function() { openProxyModal(); }, 500);
       } else {
         hlsInstance.destroy();
         hlsInstance = null;
-        // Fallback: try direct src
         video.src = proxyUrl;
         video.play().catch(function() {
-          showStatus('❌ 无法播放此频道（可能需要开启代理）', true);
+          showStatus('❌ 无法播放此频道，请检查代理设置', true);
         });
       }
     }
