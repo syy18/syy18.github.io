@@ -478,30 +478,50 @@ function playChannel(ch) {
 function playHls(video, originalUrl, proxyUrl) {
   if (hlsInstance) { try { hlsInstance.destroy(); } catch(e){} hlsInstance = null; }
 
-  var hlsConfig = {
-    enableWorker: true,
-    lowLatencyMode: false,
-    maxBufferLength: 30,
-    maxMaxBufferLength: 60
-  };
+  var needRewrite = proxyConfig.enabled && isHttpUrl(originalUrl);
 
-  // 本地代理模式：通过 xhrSetup 让所有请求走代理
-  if (proxyConfig.enabled && isHttpUrl(originalUrl)) {
-    hlsConfig.xhrSetup = function(xhr, url) {
-      var pUrl = proxifyUrl(url);
-      if (pUrl !== url) {
-        // 重新 open 到代理地址
-        xhr.open('GET', pUrl, true);
-      }
-    };
+  if (needRewrite) {
+    // 代理模式：先 fetch m3u8，重写分片 URL，再用 Blob 加载
+    showStatus('📡 加载中...', false);
+    fetch(proxyUrl)
+      .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
+      .then(function(manifest) {
+        // 重写相对 URL → 绝对代理 URL
+        var baseUrl = originalUrl.substring(0, originalUrl.lastIndexOf('/') + 1);
+        var lines = manifest.split('\n');
+        var rewritten = lines.map(function(line) {
+          line = line.trim();
+          if (!line || line.startsWith('#')) return line;
+          // 绝对 HTTP URL 也需要代理
+          if (line.indexOf('http') === 0) {
+            return isHttpUrl(line) ? proxifyUrl(line) : line;
+          }
+          // 相对 URL → 绝对 → 代理
+          var absUrl = baseUrl + line;
+          return proxifyUrl(absUrl);
+        }).join('\n');
+        var blob = new Blob([rewritten], { type: 'application/vnd.apple.mpegurl' });
+        var blobUrl = URL.createObjectURL(blob);
+        loadHlsInstance(video, blobUrl, originalUrl, proxyUrl);
+      })
+      .catch(function(err) {
+        console.error('Manifest fetch failed:', err);
+        showStatus('❌ 无法加载频道: ' + err.message, true);
+      });
+  } else {
+    loadHlsInstance(video, proxyUrl, originalUrl, proxyUrl);
   }
+}
 
+function loadHlsInstance(video, sourceUrl, originalUrl, proxyUrl) {
+  var hlsConfig = { enableWorker: true, lowLatencyMode: false, maxBufferLength: 30, maxMaxBufferLength: 60 };
   hlsInstance = new Hls(hlsConfig);
-  hlsInstance.loadSource(proxyUrl);
+  hlsInstance.loadSource(sourceUrl);
   hlsInstance.attachMedia(video);
 
   hlsInstance.on(Hls.Events.MANIFEST_PARSED, function() {
     video.play().catch(function(){});
+    hideStatus();
   });
 
   hlsInstance.on(Hls.Events.ERROR, function(event, data) {
@@ -509,20 +529,14 @@ function playHls(video, originalUrl, proxyUrl) {
       if (data.type === Hls.ErrorTypes.NETWORK_ERROR && retryCount < MAX_RETRY) {
         retryCount++;
         showStatus('🔄 重试中... (' + retryCount + '/' + MAX_RETRY + ')', false);
-        setTimeout(function() {
-          playHls(video, originalUrl, proxifyUrl(originalUrl));
-        }, 1500);
+        setTimeout(function() { playHls(video, originalUrl, proxifyUrl(originalUrl)); }, 1500);
       } else if (data.type === Hls.ErrorTypes.NETWORK_ERROR && !proxyConfig.enabled && isHttps() && isHttpUrl(originalUrl)) {
-        // 自动弹出代理设置
         showStatus('🛡️ 检测到需要代理，正在打开设置...', false);
         setTimeout(function() { openProxyModal(); }, 500);
       } else {
-        hlsInstance.destroy();
-        hlsInstance = null;
-        video.src = proxyUrl;
-        video.play().catch(function() {
-          showStatus('❌ 无法播放此频道，请检查代理设置', true);
-        });
+        hlsInstance.destroy(); hlsInstance = null;
+        video.src = sourceUrl;
+        video.play().catch(function() { showStatus('❌ 无法播放此频道', true); });
       }
     }
   });
