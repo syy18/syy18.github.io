@@ -136,10 +136,11 @@ document.addEventListener('keydown', function(e) {
       var resp = await fetch(DEFAULT_SOURCES_URL);
       if (resp.ok) defaultSources = await resp.json();
     } catch(e) { console.warn('e:', e); }
-    var sources = localSources;
-    if (sources.length === 0 && defaultSources.length > 0) {
-      sources = defaultSources;
+    var sources = defaultSources;
+    if (sources.length > 0) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(sources));
+    } else if (localSources.length > 0) {
+      sources = localSources;
     }
     if (sources.length === 0) {
       sources = [{id:'demo',name:'Demo',url:'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8'}];
