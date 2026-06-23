@@ -482,43 +482,11 @@ function playChannel(ch) {
 
 function playHls(video, originalUrl, proxyUrl) {
   if (hlsInstance) { try { hlsInstance.destroy(); } catch(e){} hlsInstance = null; }
-
-  var needRewrite = needProxy(originalUrl) && isHttpUrl(originalUrl);
-
-  if (needRewrite) {
-    // 代理模式：先 fetch m3u8，重写分片 URL，再用 Blob 加载
-    showStatus('📡 加载中...', false);
-    fetch(proxyUrl)
-      .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
-      .then(function(manifest) {
-        // 重写相对 URL → 绝对代理 URL
-        var baseUrl = originalUrl.substring(0, originalUrl.lastIndexOf('/') + 1);
-        var lines = manifest.split('\n');
-        var rewritten = lines.map(function(line) {
-          line = line.trim();
-          if (!line || line.startsWith('#')) return line;
-          // 绝对 HTTP URL 也需要代理
-          if (line.indexOf('http') === 0) {
-            return isHttpUrl(line) ? proxifyUrl(line) : line;
-          }
-          // 相对 URL → 绝对 → 代理
-          var absUrl = baseUrl + line;
-          return proxifyUrl(absUrl);
-        }).join('\n');
-        var blob = new Blob([rewritten], { type: 'application/vnd.apple.mpegurl' });
-        var blobUrl = URL.createObjectURL(blob);
-        loadHlsInstance(video, blobUrl, originalUrl, proxyUrl);
-      })
-      .catch(function(err) {
-        console.error('Manifest fetch failed:', err);
-        showStatus('❌ 无法加载频道: ' + err.message, true);
-      });
-  } else {
-    loadHlsInstance(video, proxyUrl, originalUrl, proxyUrl);
-  }
+  showStatus('📡 加载中...', false);
+  loadHlsInstance(video, proxyUrl, originalUrl);
 }
 
-function loadHlsInstance(video, sourceUrl, originalUrl, proxyUrl) {
+function loadHlsInstance(video, sourceUrl, originalUrl) {
   var hlsConfig = { enableWorker: true, lowLatencyMode: false, maxBufferLength: 30, maxMaxBufferLength: 60 };
   hlsInstance = new Hls(hlsConfig);
   hlsInstance.loadSource(sourceUrl);
@@ -533,15 +501,14 @@ function loadHlsInstance(video, sourceUrl, originalUrl, proxyUrl) {
     if (data.fatal) {
       if (data.type === Hls.ErrorTypes.NETWORK_ERROR && retryCount < MAX_RETRY) {
         retryCount++;
-        showStatus('🔄 重试中... (' + retryCount + '/' + MAX_RETRY + ')', false);
+        showStatus('🔄 重试... (' + retryCount + '/' + MAX_RETRY + ')', false);
         setTimeout(function() { playHls(video, originalUrl, proxifyUrl(originalUrl)); }, 1500);
-      } else if (data.type === Hls.ErrorTypes.NETWORK_ERROR && !proxyConfig.enabled && isHttps() && isHttpUrl(originalUrl)) {
-        showStatus('🛡️ 检测到需要代理，正在打开设置...', false);
+      } else if (data.type === Hls.ErrorTypes.NETWORK_ERROR && !needProxy(originalUrl)) {
+        showStatus('🛡️ 检测到需要代理...', false);
         setTimeout(function() { openProxyModal(); }, 500);
       } else {
         hlsInstance.destroy(); hlsInstance = null;
-        video.src = sourceUrl;
-        video.play().catch(function() { showStatus('❌ 无法播放此频道', true); });
+        showStatus('❌ 无法播放', true);
       }
     }
   });
