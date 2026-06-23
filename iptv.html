@@ -487,7 +487,7 @@ function playHls(video, originalUrl, proxyUrl) {
 }
 
 function loadHlsInstance(video, sourceUrl, originalUrl) {
-  var hlsConfig = { enableWorker: true, lowLatencyMode: false, maxBufferLength: 60, maxMaxBufferLength: 120, liveSyncDurationCount: 3, liveMaxLatencyDurationCount: 6 };
+  var hlsConfig = { enableWorker: true, lowLatencyMode: false, maxBufferLength: 60, maxMaxBufferLength: 120, liveSyncDurationCount: 3, liveMaxLatencyDurationCount: 6, startFragPrefetch: true, fragLoadingRetryDelay: 500, fragLoadingMaxRetry: 10, manifestLoadingRetryDelay: 500, manifestLoadingMaxRetry: 5 };
   hlsInstance = new Hls(hlsConfig);
   hlsInstance.loadSource(sourceUrl);
   hlsInstance.attachMedia(video);
@@ -498,18 +498,23 @@ function loadHlsInstance(video, sourceUrl, originalUrl) {
   });
 
   hlsInstance.on(Hls.Events.ERROR, function(event, data) {
-    if (data.fatal) {
-      if (data.type === Hls.ErrorTypes.NETWORK_ERROR && retryCount < MAX_RETRY) {
-        retryCount++;
-        showStatus('🔄 重试... (' + retryCount + '/' + MAX_RETRY + ')', false);
-        setTimeout(function() { playHls(video, originalUrl, proxifyUrl(originalUrl)); }, 1500);
-      } else if (data.type === Hls.ErrorTypes.NETWORK_ERROR && !needProxy(originalUrl)) {
-        showStatus('🛡️ 检测到需要代理...', false);
-        setTimeout(function() { openProxyModal(); }, 500);
-      } else {
-        hlsInstance.destroy(); hlsInstance = null;
-        showStatus('❌ 无法播放', true);
+    if (!data.fatal) {
+      // 非致命错误：跳过坏分片，加载下一个
+      if (data.type === Hls.ErrorTypes.NETWORK_ERROR && data.details === 'fragLoadError') {
+        hlsInstance.startLoad();
       }
+      return;
+    }
+    if (data.type === Hls.ErrorTypes.NETWORK_ERROR && retryCount < MAX_RETRY) {
+      retryCount++;
+      showStatus('🔄 重试... (' + retryCount + '/' + MAX_RETRY + ')', false);
+      setTimeout(function() { playHls(video, originalUrl, proxifyUrl(originalUrl)); }, 1500);
+    } else if (data.type === Hls.ErrorTypes.NETWORK_ERROR && !needProxy(originalUrl)) {
+      showStatus('🛡️ 检测到需要代理...', false);
+      setTimeout(function() { openProxyModal(); }, 500);
+    } else {
+      hlsInstance.destroy(); hlsInstance = null;
+      showStatus('❌ 无法播放', true);
     }
   });
 }
