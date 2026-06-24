@@ -197,6 +197,8 @@ function isHttps() { return location.protocol === 'https:'; }
 function isHttpUrl(url) { return url.indexOf('http:') === 0; }
 function needProxy(url) {
   if (!isHttpUrl(url)) return false;
+  // iOS原生HLS不需要CORS，直接播放（代理反而慢）
+  if (isIOS() && !Hls.isSupported()) return false;
   // 本地服务器模式：始终代理（解决CORS跨域）
   if (location.hostname === '127.0.0.1' || location.hostname === 'localhost') return true;
   // 局域网代理模式：也自动代理（解决HLS.js CORS问题）
