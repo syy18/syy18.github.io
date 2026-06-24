@@ -197,14 +197,14 @@ function isHttps() { return location.protocol === 'https:'; }
 function isHttpUrl(url) { return url.indexOf('http:') === 0; }
 function needProxy(url) {
   if (!isHttpUrl(url)) return false;
-  // iOS原生HLS不需要CORS，直接播放（代理反而慢）
+  // iOS原生HLS不需要CORS，直接播放
   if (isIOS() && !Hls.isSupported()) return false;
-  // 本地服务器模式：始终代理（解决CORS跨域）
+  // 本地服务器（localhost/127.0.0.1）：HLS.js需要CORS代理
   if (location.hostname === '127.0.0.1' || location.hostname === 'localhost') return true;
-  // 局域网代理模式：也自动代理（解决HLS.js CORS问题）
-  if (location.port === '18888') return true;
-  // GitHub Pages模式：仅HTTPS页面代理HTTP流
-  return proxyConfig.enabled && isHttps();
+  // HTTPS页面（GitHub Pages）：HTTP流需要代理绕混合内容
+  if (isHttps()) return proxyConfig.enabled;
+  // HTTP页面（局域网代理）：直接播放，不走代理（更快）
+  return false;
 }
 
 function proxifyUrl(url) {
