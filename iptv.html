@@ -196,10 +196,13 @@ function isIOS() {
 function isHttps() { return location.protocol === 'https:'; }
 function isHttpUrl(url) { return url.indexOf('http:') === 0; }
 function needProxy(url) {
+  if (!isHttpUrl(url)) return false;
   // 本地服务器模式：始终代理（解决CORS跨域）
-  if (location.hostname === '127.0.0.1' || location.hostname === 'localhost') return isHttpUrl(url);
+  if (location.hostname === '127.0.0.1' || location.hostname === 'localhost') return true;
+  // 局域网代理模式：也自动代理（解决HLS.js CORS问题）
+  if (location.port === '18888') return true;
   // GitHub Pages模式：仅HTTPS页面代理HTTP流
-  return proxyConfig.enabled && isHttps() && isHttpUrl(url);
+  return proxyConfig.enabled && isHttps();
 }
 
 function proxifyUrl(url) {
