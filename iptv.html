@@ -15,23 +15,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC
 .nav-bar a.active{background:#8b7355;color:#fff}
 .nav-title{font-size:18px;font-weight:700;color:#5a4a3a;margin-right:auto}
 .player-wrapper{position:relative;width:100%;background:#000}
-#video-container{width:100%;max-width:960px;margin:0 auto;background:#000;aspect-ratio:16/9}
+#video-container{width:100%;max-width:960px;margin:0 auto;background:#000;aspect-ratio:16/9;position:relative}
 #video-container video{width:100%;height:100%;display:block}
+#video-container iframe{width:100%;height:100%;border:none}
 .player-controls{display:flex;align-items:center;justify-content:center;gap:12px;padding:10px;background:#1a1a1a;flex-wrap:wrap}
 .player-controls button{background:rgba(255,255,255,0.12);color:#fff;border:none;padding:8px 18px;border-radius:6px;cursor:pointer;font-size:14px}
 .player-controls button:hover{background:rgba(255,255,255,0.25)}
 .player-controls .channel-name{color:#fff;font-size:14px;min-width:120px;text-align:center}
 .player-controls .channel-info{color:#aaa;font-size:13px}
-.play-status{color:#ff6b6b;font-size:12px;text-align:center;padding:4px;background:#1a1a1a;display:none}
-.play-status.visible{display:block}
 .toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:14px 20px;background:#fff;border-bottom:1px solid #e0d6cb}
 .toolbar .count-badge{background:#8b7355;color:#fff;font-size:12px;padding:3px 10px;border-radius:12px;margin-left:4px}
 .search-box{flex:1;min-width:180px;max-width:320px;padding:8px 14px;border:1px solid #d0c4b6;border-radius:20px;font-size:14px;outline:none;background:#faf8f5}
 .search-box:focus{border-color:#8b7355}
-.proxy-toggle{display:flex;align-items:center;gap:6px;font-size:13px;color:#8b7355;cursor:pointer;user-select:none;padding:4px 10px;border-radius:12px;border:1px solid #d0c4b6;background:#fff;white-space:nowrap}
-.proxy-toggle:hover{background:#f0ebe4}
-.proxy-toggle.active{background:#27ae60;color:#fff;border-color:#27ae60}
-.proxy-toggle.local{background:#e67e22;color:#fff;border-color:#e67e22}
 .categories{display:flex;flex-wrap:wrap;gap:6px;padding:12px 20px;border-bottom:1px solid #e0d6cb}
 .cat-btn{padding:6px 16px;border-radius:16px;border:1px solid #d0c4b6;background:#fff;color:#8b7355;cursor:pointer;font-size:13px}
 .cat-btn:hover{background:#f0ebe4}
@@ -44,33 +39,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC
 .channel-thumb img{width:100%;height:100%;object-fit:cover}
 .channel-info-block{padding:10px 12px}
 .channel-name{font-size:14px;font-weight:600;color:#5a4a3a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.channel-group{font-size:11px;color:#b0a090}
+.channel-group{font-size:11px;color:#b0a090;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .fav-btn{position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.5);color:#fff;border:none;border-radius:50%;width:26px;height:26px;font-size:13px;cursor:pointer;z-index:2;display:flex;align-items:center;justify-content:center}
 .fav-btn:hover{background:rgba(0,0,0,0.75)}
 .fav-btn.active{color:#ffd700}
+.yt-badge{position:absolute;bottom:6px;left:6px;background:rgba(255,0,0,0.8);color:#fff;font-size:10px;padding:2px 6px;border-radius:4px;z-index:2}
 .loading{text-align:center;padding:60px 20px;color:#b0a090;font-size:15px}
 .loading .spinner{display:inline-block;width:32px;height:32px;border:3px solid #e0d6cb;border-top-color:#8b7355;border-radius:50%;animation:spin .8s linear infinite;margin-bottom:12px}
 @keyframes spin{to{transform:rotate(360deg)}}
 .empty-state{text-align:center;padding:60px 20px;color:#b0a090}
 .empty-state .icon{font-size:48px;margin-bottom:12px}
 .welcome-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;z-index:9999}
-.welcome-card{background:#fff;border-radius:16px;padding:32px;max-width:440px;width:90%;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,0.2)}
+.welcome-card{background:#fff;border-radius:16px;padding:32px;max-width:420px;width:90%;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,0.2)}
 .welcome-card h2{color:#5a4a3a;margin-bottom:10px}
 .welcome-card p{color:#8b7355;font-size:14px;line-height:1.7;margin-bottom:8px}
 .welcome-card .btn{display:inline-block;margin-top:16px;padding:10px 32px;background:#8b7355;color:#fff;border:none;border-radius:24px;font-size:15px;cursor:pointer}
 .welcome-card .btn:hover{background:#7a6347}
-.proxy-modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:9998}
-.proxy-modal.show{display:flex}
-.proxy-card{background:#fff;border-radius:16px;padding:24px;max-width:400px;width:90%;box-shadow:0 8px 30px rgba(0,0,0,0.2)}
-.proxy-card h3{color:#5a4a3a;margin-bottom:12px;font-size:16px}
-.proxy-card label{display:block;font-size:13px;color:#8b7355;margin-bottom:4px}
-.proxy-card input{width:100%;padding:8px 12px;border:1px solid #d0c4b6;border-radius:8px;font-size:14px;margin-bottom:12px;outline:none}
-.proxy-card input:focus{border-color:#8b7355}
-.proxy-card .btns{display:flex;gap:8px;justify-content:flex-end}
-.proxy-card .btns button{padding:8px 20px;border-radius:8px;border:none;cursor:pointer;font-size:14px}
-.proxy-card .btn-primary{background:#8b7355;color:#fff}
-.proxy-card .btn-secondary{background:#f0ebe4;color:#8b7355}
-.proxy-card .status-text{font-size:12px;margin-top:8px}
 @media(max-width:600px){.channel-grid{grid-template-columns:repeat(2,1fr);gap:8px;padding:12px}.toolbar{padding:10px 14px}.search-box{min-width:140px}.nav-bar{padding:10px 14px;gap:10px;flex-wrap:wrap}}
 </style>
 </head>
@@ -84,8 +68,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC
 </div>
 
 <div class="player-wrapper">
-  <div id="video-container"><video id="video-player" controls autoplay playsinline></video></div>
-  <div class="play-status" id="play-status"></div>
+  <div id="video-container">
+    <video id="video-player" controls autoplay playsinline style="display:none"></video>
+    <iframe id="yt-player" style="display:none" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+  </div>
   <div class="player-controls">
     <button onclick="switchChannel(-1)">◀ 上一频道</button>
     <span class="channel-name" id="current-channel-name">未选择频道</span>
@@ -100,215 +86,38 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC
     <span class="count-badge" id="total-count">0</span>
   </div>
   <input class="search-box" id="search-input" placeholder="🔍 搜索频道名称或分组..." oninput="doSearch()">
-  <div class="proxy-toggle" id="proxy-toggle" onclick="toggleProxy()" title="频道播放不了？点击开启代理">
-    🛡️ 代理
-  </div>
 </div>
 
 <div class="categories" id="categories">
   <button class="cat-btn active" data-cat="all" onclick="switchCategory('all')">全部</button>
-  <button class="cat-btn" data-cat="guonei" onclick="switchCategory('guonei')">🇨🇳 国内</button>
-  <button class="cat-btn" data-cat="guoji" onclick="switchCategory('guoji')">🌍 国际</button>
-  <button class="cat-btn" data-cat="xinwen" onclick="switchCategory('xinwen')">📰 新闻</button>
-  <button class="cat-btn" data-cat="shanghai" onclick="switchCategory('shanghai')">🏙️ 上海</button>
+  <button class="cat-btn" data-cat="stable" onclick="switchCategory('stable')">🌟 稳定频道</button>
+  <button class="cat-btn" data-cat="taiwan" onclick="switchCategory('taiwan')">🇹🇼 台湾</button>
+  <button class="cat-btn" data-cat="hk" onclick="switchCategory('hk')">🇭🇰 香港</button>
+  <button class="cat-btn" data-cat="intl" onclick="switchCategory('intl')">🌍 国际</button>
+  <button class="cat-btn" data-cat="m3u" onclick="switchCategory('m3u')">📡 M3U 源</button>
   <button class="cat-btn" data-cat="fav" onclick="switchCategory('fav')">⭐ 收藏</button>
 </div>
 
 <div id="channel-grid" class="channel-grid"></div>
-
-<!-- 代理设置弹窗 -->
-<div class="proxy-modal" id="proxy-modal">
-  <div class="proxy-card">
-    <h3>🛡️ 代理设置</h3>
-    <label>代理模式</label>
-    <div style="display:flex;gap:8px;margin-bottom:12px">
-      <button id="mode-local" class="btn-secondary" onclick="setProxyMode('local')" style="flex:1;padding:8px;border-radius:8px;border:2px solid #d0c4b6;cursor:pointer;font-size:13px;background:#fff">🏠 本地代理（推荐）</button>
-      <button id="mode-cors" class="btn-secondary" onclick="setProxyMode('cors')" style="flex:1;padding:8px;border-radius:8px;border:2px solid #d0c4b6;cursor:pointer;font-size:13px;background:#fff">☁️ 公网CORS</button>
-    </div>
-    <div id="local-proxy-section">
-      <label>本地代理地址</label>
-      <input id="local-proxy-url" placeholder="http://127.0.0.1:18888" value="http://127.0.0.1:18888">
-      <div id="local-proxy-status" class="status-text"></div>
-      <p style="font-size:12px;color:#b0a090;margin-top:4px">
-        💡 启动命令: <code style="background:#f0ebe4;padding:2px 6px;border-radius:4px">python iptv-proxy.py</code>
-      </p>
-    </div>
-    <div id="cors-proxy-section" style="display:none">
-      <label>CORS代理地址</label>
-      <input id="cors-proxy-url" placeholder="https://corsproxy.io/?" value="https://corsproxy.io/?">
-      <p style="font-size:12px;color:#b0a090;margin-top:4px">
-        公网代理较慢且不稳定，推荐优先使用本地代理
-      </p>
-    </div>
-    <div class="btns">
-      <button class="btn-secondary" onclick="closeProxyModal()">取消</button>
-      <button class="btn-primary" onclick="saveProxy()">确定</button>
-    </div>
-  </div>
-</div>
 
 <script>
 var DEFAULT_SOURCES_URL = 'https://syy18.github.io/iptv-sources.json';
 var STORAGE_KEY = 'iptv_sources_v1';
 var FAV_KEY = 'iptv_favs_v1';
 var WELCOME_KEY = 'iptv_welcomed_v1';
-var PROXY_KEY = 'iptv_proxy_v1';
 var allChannels = [];
 var filteredChannels = [];
 var currentCategory = 'all';
 var currentChannel = null;
 var hlsInstance = null;
 var dashInstance = null;
-var retryCount = 0;
-var MAX_RETRY = 2;
 
-// 代理配置
-var proxyConfig = loadProxyConfig();
-
-function loadProxyConfig() {
-  try {
-    var saved = JSON.parse(localStorage.getItem(PROXY_KEY));
-    if (saved && saved.mode) return saved;
-  } catch(e) {}
-  return { enabled: false, mode: 'local', localUrl: 'http://127.0.0.1:18888', corsUrl: 'https://corsproxy.io/?' };
-}
-
-function saveProxyConfig() {
-  localStorage.setItem(PROXY_KEY, JSON.stringify(proxyConfig));
-}
-
-function isHttps() { return location.protocol === 'https:'; }
-function isHttpUrl(url) { return url.indexOf('http:') === 0; }
-function needProxy(url) {
-  // 本地服务器模式：始终代理（解决CORS跨域）
-  if (location.hostname === '127.0.0.1' || location.hostname === 'localhost') return isHttpUrl(url);
-  // GitHub Pages模式：仅HTTPS页面代理HTTP流
-  return proxyConfig.enabled && isHttps() && isHttpUrl(url);
-}
-
-function proxifyUrl(url) {
-  if (!needProxy(url)) return url;
-  if (proxyConfig.mode === 'local') {
-    return proxyConfig.localUrl + '/proxy/' + encodeURIComponent(url);
-  } else {
-    return proxyConfig.corsUrl + encodeURIComponent(url);
-  }
-}
-
-// 代理按钮 UI
-(function() {
-  var el = document.getElementById('proxy-toggle');
-  if (proxyConfig.enabled) {
-    el.classList.add(proxyConfig.mode === 'local' ? 'local' : 'active');
-  }
-})();
-
-function toggleProxy() {
-  if (!proxyConfig.enabled) {
-    // 首次开启 → 弹出设置
-    openProxyModal();
-  } else {
-    // 已开启 → 关闭
-    proxyConfig.enabled = false;
-    saveProxyConfig();
-    updateProxyUI();
-    if (currentChannel) playChannel(currentChannel);
-  }
-}
-
-function openProxyModal() {
-  document.getElementById('proxy-modal').classList.add('show');
-  setProxyMode(proxyConfig.mode || 'local');
-  document.getElementById('local-proxy-url').value = proxyConfig.localUrl || 'http://127.0.0.1:18888';
-  document.getElementById('cors-proxy-url').value = proxyConfig.corsUrl || 'https://corsproxy.io/?';
-  checkLocalProxy();
-}
-
-function closeProxyModal() {
-  document.getElementById('proxy-modal').classList.remove('show');
-}
-
-function setProxyMode(mode) {
-  proxyConfig.mode = mode;
-  var localBtn = document.getElementById('mode-local');
-  var corsBtn = document.getElementById('mode-cors');
-  var localSec = document.getElementById('local-proxy-section');
-  var corsSec = document.getElementById('cors-proxy-section');
-  if (mode === 'local') {
-    localBtn.style.borderColor = '#8b7355'; localBtn.style.background = '#f0ebe4';
-    corsBtn.style.borderColor = '#d0c4b6'; corsBtn.style.background = '#fff';
-    localSec.style.display = 'block'; corsSec.style.display = 'none';
-  } else {
-    corsBtn.style.borderColor = '#8b7355'; corsBtn.style.background = '#f0ebe4';
-    localBtn.style.borderColor = '#d0c4b6'; localBtn.style.background = '#fff';
-    localSec.style.display = 'none'; corsSec.style.display = 'block';
-  }
-}
-
-function checkLocalProxy() {
-  var url = document.getElementById('local-proxy-url').value.replace(/\/$/, '') + '/status';
-  var el = document.getElementById('local-proxy-status');
-  el.textContent = '检测中...'; el.style.color = '#999';
-  fetch(url, { mode: 'cors', signal: AbortSignal.timeout(3000) })
-    .then(function(r) { return r.json(); })
-    .then(function(d) {
-      if (d.status === 'ok') {
-        el.textContent = '✅ 本地代理运行中'; el.style.color = '#27ae60';
-      } else {
-        el.textContent = '⚠️ 代理响应异常'; el.style.color = '#e67e22';
-      }
-    })
-    .catch(function() {
-      el.textContent = '❌ 本地代理未启动，请先运行 python iptv-proxy.py'; el.style.color = '#e74c3c';
-    });
-}
-
-function saveProxy() {
-  if (proxyConfig.mode === 'local') {
-    proxyConfig.localUrl = document.getElementById('local-proxy-url').value.replace(/\/$/, '');
-  } else {
-    proxyConfig.corsUrl = document.getElementById('cors-proxy-url').value;
-  }
-  proxyConfig.enabled = true;
-  saveProxyConfig();
-  updateProxyUI();
-  closeProxyModal();
-  showStatus('🛡️ 代理已开启 (' + (proxyConfig.mode === 'local' ? '本地' : 'CORS') + ')', false);
-  if (currentChannel) playChannel(currentChannel);
-}
-
-function updateProxyUI() {
-  var el = document.getElementById('proxy-toggle');
-  el.classList.remove('active', 'local');
-  if (proxyConfig.enabled) {
-    el.classList.add(proxyConfig.mode === 'local' ? 'local' : 'active');
-    el.textContent = '🛡️ 代理 ' + (proxyConfig.mode === 'local' ? '(本地)' : '(CORS)');
-  } else {
-    el.textContent = '🛡️ 代理';
-  }
-}
-
-function showStatus(msg, isError) {
-  var el = document.getElementById('play-status');
-  el.textContent = msg;
-  el.style.color = isError ? '#ff6b6b' : '#8bc34a';
-  el.classList.add('visible');
-  if (!isError) setTimeout(function() { el.classList.remove('visible'); }, 3000);
-}
-
-function hideStatus() {
-  document.getElementById('play-status').classList.remove('visible');
-}
-
-// Welcome overlay
 (function() {
   if (!localStorage.getItem(WELCOME_KEY)) {
     var div = document.createElement('div');
     div.className = 'welcome-overlay';
     div.id = 'welcome-overlay';
-    var isPC = !('ontouchstart' in window);
-    var proxyTip = isPC ? '<p style="margin-top:8px;color:#e67e22;font-size:13px">💻 电脑用户：频道播放不了？点工具栏「🛡️ 代理」，先运行 <code>python iptv-proxy.py</code></p>' : '';
-    div.innerHTML = '<div class="welcome-card"><h2>📺 欢迎来到电视墙</h2><p>🎯 点击频道卡片即可播放</p><p>◀ → 方向键切换频道</p><p>⭐ 收藏你喜欢的频道</p><p>🔍 搜索频道名称或分组</p>' + proxyTip + '<p style="margin-top:12px;color:#b0a090;font-size:12px">频道数据从云端自动同步</p><button class="btn" onclick="dismissWelcome()">开始看电视</button></div>';
+    div.innerHTML = '<div class="welcome-card"><h2>📺 欢迎来到电视墙</h2><p>🌟 稳定频道 = YouTube 直播，长期有效</p><p>📡 M3U 源 = 公开直播源，可能有波动</p><p>🎯 点击频道卡片即可播放</p><p>◀ → 方向键切换频道</p><p>⭐ 收藏你喜欢的频道</p><button class="btn" onclick="dismissWelcome()">开始看电视</button></div>';
     document.body.appendChild(div);
   }
 })();
@@ -323,42 +132,129 @@ document.addEventListener('keydown', function(e) {
   else if (e.key === 'ArrowRight') switchChannel(1);
 });
 
+// 判断是否为 YouTube 频道
+function isYoutubeChannel(ch) {
+  return ch.type === 'youtube';
+}
+
+// 播放 YouTube 频道
+function playYoutube(ch) {
+  var video = document.getElementById('video-player');
+  var iframe = document.getElementById('yt-player');
+  video.style.display = 'none';
+  iframe.style.display = 'block';
+  if (hlsInstance) { try { hlsInstance.destroy(); } catch(e){} hlsInstance = null; }
+  if (dashInstance) { try { dashInstance.reset(); } catch(e){} dashInstance = null; }
+  video.pause();
+  video.src = '';
+
+  var channelId = ch.id;
+  // 如果是 channel ID（以 UC 开头），用 channel 直播流
+  // 如果是视频 ID，用 video 嵌入
+  var src = '';
+  if (channelId.indexOf('UC') === 0) {
+    src = 'https://www.youtube.com/embed/live_stream?channel=' + channelId + '&autoplay=1';
+  } else {
+    src = 'https://www.youtube.com/embed/' + channelId + '?autoplay=1';
+  }
+  iframe.src = src;
+  currentChannel = ch;
+  document.getElementById('current-channel-name').textContent = ch.source_name || ch.name;
+  updatePosition();
+  renderChannelGrid();
+}
+
+// 播放 HLS/DASH 频道
+function playM3U(ch) {
+  var video = document.getElementById('video-player');
+  var iframe = document.getElementById('yt-player');
+  iframe.style.display = 'none';
+  iframe.src = '';
+  video.style.display = 'block';
+
+  if (hlsInstance) { try { hlsInstance.destroy(); } catch(e){} hlsInstance = null; }
+  if (dashInstance) { try { dashInstance.reset(); } catch(e){} dashInstance = null; }
+
+  document.getElementById('current-channel-name').textContent = ch.name;
+  var url = ch.url;
+  if (!url) { video.src = ''; return; }
+
+  if (url.indexOf('.m3u8') >= 0) {
+    if (Hls.isSupported()) {
+      hlsInstance = new Hls();
+      hlsInstance.loadSource(url);
+      hlsInstance.attachMedia(video);
+      hlsInstance.on(Hls.Events.MANIFEST_PARSED, function() { video.play().catch(function(){}); });
+      hlsInstance.on(Hls.Events.ERROR, function(event, data) {
+        if (data.fatal) {
+          hlsInstance.destroy(); hlsInstance = null;
+          video.src = url; video.play().catch(function(){});
+        }
+      });
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = url; video.play().catch(function(){});
+    }
+  } else if (url.indexOf('.mpd') >= 0) {
+    try { dashInstance = dashjs.MediaPlayer().create(); dashInstance.initialize(video, url, true); } catch(e) {}
+  } else {
+    video.src = url; video.play().catch(function(){});
+  }
+  currentChannel = ch;
+  updatePosition();
+  renderChannelGrid();
+}
+
+function playChannel(ch) {
+  if (!ch) return;
+  if (isYoutubeChannel(ch)) {
+    playYoutube(ch);
+  } else {
+    playM3U(ch);
+  }
+}
+
 (async function init() {
   try {
-    var stored = localStorage.getItem(STORAGE_KEY);
-    var localSources = [];
-    if (stored) { try { localSources = JSON.parse(stored); } catch(e) {} }
-    var defaultSources = [];
-    try {
-      var resp = await fetch(DEFAULT_SOURCES_URL);
-      if (resp.ok) defaultSources = await resp.json();
-    } catch(e) { console.warn('e:', e); }
-    var sources = defaultSources;
-    if (sources.length > 0) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(sources));
-    } else if (localSources.length > 0) {
-      sources = localSources;
-    }
-    if (sources.length === 0) {
-      sources = [{id:'demo',name:'Demo',url:'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8'}];
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(sources));
-    }
-    for (var i = 0; i < sources.length; i++) {
+    var resp = await fetch(DEFAULT_SOURCES_URL);
+    var config = await resp.json();
+
+    // 加载 YouTube 频道
+    var ytChannels = (config.youtube || []).map(function(yt) {
+      return {
+        name: yt.name,
+        type: 'youtube',
+        id: yt.id,
+        category: yt.category || 'stable',
+        source_name: yt.name,
+        group: '🌟 稳定频道'
+      };
+    });
+
+    // 加载 M3U 源
+    var m3uSources = config.m3u || [];
+    var m3uChannels = [];
+    for (var i = 0; i < m3uSources.length; i++) {
       try {
-        var channels = await parseM3U(sources[i].url, sources[i].name);
-        allChannels = allChannels.concat(channels);
-      } catch(e) { console.warn('parse fail:', sources[i].name); }
+        var r = await fetch(m3uSources[i].url);
+        var text = await r.text();
+        var chs = parseM3U(text, m3uSources[i].name);
+        m3uChannels = m3uChannels.concat(chs);
+      } catch(e) {
+        console.warn('M3U加载失败:', m3uSources[i].name);
+      }
     }
+
+    // 合并：YouTube 频道在前，M3U 频道在后
+    allChannels = ytChannels.concat(m3uChannels);
+
     applyFilterAndRender();
   } catch(e) {
     console.error('init fail:', e);
-    document.getElementById('channel-grid').innerHTML = '<div class="empty-state"><div class="icon">⚠️</div>加载频道失败</div>';
+    document.getElementById('channel-grid').innerHTML = '<div class="empty-state"><div class="icon">⚠️</div>加载失败</div>';
   }
 })();
 
-async function parseM3U(url, sourceName) {
-  var resp = await fetch(url);
-  var text = await resp.text();
+function parseM3U(text, sourceName) {
   var channels = [];
   var lines = text.split('\n');
   var extinf = null;
@@ -367,7 +263,15 @@ async function parseM3U(url, sourceName) {
     if (line.indexOf('#EXTINF:') === 0) {
       extinf = parseExtinf(line);
     } else if (line && line.indexOf('#') !== 0 && extinf) {
-      channels.push({name: extinf.name, url: line, logo: extinf.logo, group: extinf.group, source: sourceName});
+      channels.push({
+        name: extinf.name,
+        url: line,
+        logo: extinf.logo,
+        group: extinf.group || '其他',
+        source: sourceName,
+        type: 'm3u',
+        category: 'm3u'
+      });
       extinf = null;
     }
   }
@@ -385,35 +289,33 @@ function parseExtinf(line) {
   return result;
 }
 
-function getCategory(ch) {
-  var g = (ch.group || '').toLowerCase();
-  var n = (ch.name || '').toLowerCase();
-  if (g.indexOf('上海') >= 0 || g.indexOf('shanghai') >= 0 || n.indexOf('上海') >= 0) return 'shanghai';
-  if (g.indexOf('新闻') >= 0 || g.indexOf('news') >= 0 || n.indexOf('新闻') >= 0 || n.indexOf('凤凰') >= 0 || n.indexOf('新唐人') >= 0) return 'xinwen';
-  if (g.indexOf('国际') >= 0 || g.indexOf('境外') >= 0 || g.indexOf('bbc') >= 0 || g.indexOf('cnn') >= 0 || n.indexOf('bbc') >= 0 || n.indexOf('cnn') >= 0) return 'guoji';
-  if (g.indexOf('cctv') >= 0 || g.indexOf('央视') >= 0 || g.indexOf('卫视') >= 0 || g.indexOf('中央') >= 0 || g.indexOf('国内') >= 0 || n.indexOf('cctv') >= 0 || n.indexOf('央视') >= 0) return 'guonei';
-  return 'guoji';
-}
-
 function applyFilterAndRender() {
   var query = (document.getElementById('search-input').value || '').trim().toLowerCase();
   var favs = getFavs();
   var list = allChannels.slice();
+
   if (currentCategory === 'fav') {
     list = list.filter(function(ch) { return favs.indexOf(ch.name) >= 0; });
   } else if (currentCategory !== 'all') {
-    list = list.filter(function(ch) { return getCategory(ch) === currentCategory; });
+    list = list.filter(function(ch) { return ch.category === currentCategory; });
   }
+
   if (query) {
-    list = list.filter(function(ch) { return (ch.name||'').toLowerCase().indexOf(query) >= 0 || (ch.group||'').toLowerCase().indexOf(query) >= 0; });
+    list = list.filter(function(ch) {
+      return (ch.name||'').toLowerCase().indexOf(query) >= 0 ||
+             ((ch.source_name||ch.name||'')).toLowerCase().indexOf(query) >= 0 ||
+             (ch.group||'').toLowerCase().indexOf(query) >= 0;
+    });
   }
+
   var seen = {};
   list = list.filter(function(ch) {
-    var key = ch.name + '|' + ch.url;
+    var key = ch.type + '|' + (ch.id || ch.url);
     if (seen[key]) return false;
     seen[key] = true;
     return true;
   });
+
   filteredChannels = list;
   renderChannelGrid();
 }
@@ -423,15 +325,19 @@ function renderChannelGrid() {
   var list = filteredChannels;
   document.getElementById('total-count').textContent = list.length;
   if (list.length === 0) { grid.innerHTML = '<div class="empty-state"><div class="icon">📺</div>没有找到频道</div>'; return; }
+
   var favs = getFavs();
   var html = '';
   for (var i = 0; i < list.length; i++) {
     var ch = list[i];
-    var isActive = currentChannel && currentChannel.name === ch.name && currentChannel.url === ch.url;
-    var isFav = favs.indexOf(ch.name) >= 0;
-    var logo = ch.logo ? '<img src="' + ch.logo + '" alt="" onerror="this.style.display=\'none\'">' : '';
-    var starBtn = '<button class="fav-btn ' + (isFav ? 'active' : '') + '" onclick="event.stopPropagation();toggleFav(\'' + ch.name.replace(/'/g, "\\'") + '\')">' + (isFav ? '★' : '☆') + '</button>';
-    html += '<div class="channel-card' + (isActive ? ' active' : '') + '" onclick="playChannelByIndex(' + i + ')"><div class="channel-thumb">' + logo + starBtn + '</div><div class="channel-info-block"><div class="channel-name">' + ch.name + '</div><div class="channel-group">' + ch.group + '</div></div></div>';
+    var isActive = currentChannel && ((currentChannel.type === ch.type && currentChannel.id === ch.id) || (currentChannel.url === ch.url));
+    var isFav = favs.indexOf(ch.name) >= 0 || favs.indexOf(ch.source_name || ch.name) >= 0;
+    var isYt = isYoutubeChannel(ch);
+    var logoHtml = ch.logo ? '<img src="' + ch.logo + '" alt="" onerror="this.style.display=\'none\'">' : '';
+    var badgeHtml = isYt ? '<span class="yt-badge">YouTube</span>' : '';
+    var displayName = ch.source_name || ch.name;
+    var starHtml = '<button class="fav-btn ' + (isFav ? 'active' : '') + '" onclick="event.stopPropagation();toggleFav(\'' + (displayName || '').replace(/'/g,"\\'") + '\')">' + (isFav ? '★' : '☆') + '</button>';
+    html += '<div class="channel-card' + (isActive ? ' active' : '') + '" onclick="playChannelByIndex(' + i + ')"><div class="channel-thumb">' + logoHtml + badgeHtml + starHtml + '</div><div class="channel-info-block"><div class="channel-name">' + displayName + '</div><div class="channel-group">' + (isYt ? '🌟 稳定频道' : (ch.group || 'M3U 源')) + '</div></div></div>';
   }
   grid.innerHTML = html;
 }
@@ -448,77 +354,6 @@ function switchCategory(cat) {
   updatePosition();
 }
 
-function playChannel(ch) {
-  if (!ch) return;
-  currentChannel = ch;
-  retryCount = 0;
-  if (hlsInstance) { try { hlsInstance.destroy(); } catch(e){} hlsInstance = null; }
-  if (dashInstance) { try { dashInstance.reset(); } catch(e){} dashInstance = null; }
-  var video = document.getElementById('video-player');
-  video.removeAttribute('src');
-  video.load();
-  document.getElementById('current-channel-name').textContent = ch.name;
-  var url = ch.url;
-  if (!url) { video.src = ''; return; }
-
-  var playUrl = proxifyUrl(url);
-
-  if (url.indexOf('.m3u8') >= 0) {
-    if (Hls.isSupported()) {
-      playHls(video, url, playUrl);
-    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      video.src = playUrl;
-      video.play().catch(function(){});
-    }
-  } else if (url.indexOf('.mpd') >= 0) {
-    try { dashInstance = dashjs.MediaPlayer().create(); dashInstance.initialize(video, playUrl, true); } catch(e) { console.warn('dash fail'); }
-  } else {
-    video.src = playUrl;
-    video.play().catch(function(){});
-  }
-  updatePosition();
-  renderChannelGrid();
-}
-
-function playHls(video, originalUrl, proxyUrl) {
-  if (hlsInstance) { try { hlsInstance.destroy(); } catch(e){} hlsInstance = null; }
-  showStatus('📡 加载中...', false);
-  loadHlsInstance(video, proxyUrl, originalUrl);
-}
-
-function loadHlsInstance(video, sourceUrl, originalUrl) {
-  var hlsConfig = { enableWorker: true, lowLatencyMode: false, maxBufferLength: 60, maxMaxBufferLength: 120, liveSyncDurationCount: 3, liveMaxLatencyDurationCount: 6, startFragPrefetch: true, fragLoadingRetryDelay: 500, fragLoadingMaxRetry: 10, manifestLoadingRetryDelay: 500, manifestLoadingMaxRetry: 5 };
-  hlsInstance = new Hls(hlsConfig);
-  hlsInstance.loadSource(sourceUrl);
-  hlsInstance.attachMedia(video);
-
-  hlsInstance.on(Hls.Events.MANIFEST_PARSED, function() {
-    video.play().catch(function(){});
-    hideStatus();
-  });
-
-  hlsInstance.on(Hls.Events.ERROR, function(event, data) {
-    if (!data.fatal) {
-      // 非致命错误：跳过坏分片，加载下一个
-      if (data.type === Hls.ErrorTypes.NETWORK_ERROR && data.details === 'fragLoadError') {
-        hlsInstance.startLoad();
-      }
-      return;
-    }
-    if (data.type === Hls.ErrorTypes.NETWORK_ERROR && retryCount < MAX_RETRY) {
-      retryCount++;
-      showStatus('🔄 重试... (' + retryCount + '/' + MAX_RETRY + ')', false);
-      setTimeout(function() { playHls(video, originalUrl, proxifyUrl(originalUrl)); }, 1500);
-    } else if (data.type === Hls.ErrorTypes.NETWORK_ERROR && !needProxy(originalUrl)) {
-      showStatus('🛡️ 检测到需要代理...', false);
-      setTimeout(function() { openProxyModal(); }, 500);
-    } else {
-      hlsInstance.destroy(); hlsInstance = null;
-      showStatus('❌ 无法播放', true);
-    }
-  });
-}
-
 function playChannelByIndex(idx) {
   var ch = filteredChannels[idx];
   if (ch) playChannel(ch);
@@ -527,9 +362,11 @@ function playChannelByIndex(idx) {
 function switchChannel(dir) {
   if (filteredChannels.length === 0) return;
   if (!currentChannel) { playChannel(filteredChannels[0]); return; }
+
   var idx = -1;
   for (var i = 0; i < filteredChannels.length; i++) {
-    if (filteredChannels[i].name === currentChannel.name && filteredChannels[i].url === currentChannel.url) { idx = i; break; }
+    var ch = filteredChannels[i];
+    if ((currentChannel.type === ch.type && currentChannel.id === ch.id) || (currentChannel.url === ch.url)) { idx = i; break; }
   }
   if (idx === -1) {
     for (var i = 0; i < filteredChannels.length; i++) {
@@ -548,7 +385,8 @@ function updatePosition() {
   if (!currentChannel || filteredChannels.length === 0) { el.textContent = ''; return; }
   var idx = -1;
   for (var i = 0; i < filteredChannels.length; i++) {
-    if (filteredChannels[i].name === currentChannel.name && filteredChannels[i].url === currentChannel.url) { idx = i; break; }
+    var ch = filteredChannels[i];
+    if ((currentChannel.type === ch.type && currentChannel.id === ch.id) || (currentChannel.url === ch.url)) { idx = i; break; }
   }
   if (idx === -1) {
     for (var i = 0; i < filteredChannels.length; i++) {
