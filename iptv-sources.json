@@ -1,3 +1,20 @@
-[
-  { "name": "vbskycn/iptv（央视+卫视+地方台）", "url": "https://syy18.github.io/iptv.m3u" }
-]
+{
+  "youtube": [
+    {"name":"东森新闻","id":"V1p33hqPrUk","category":"taiwan"},
+    {"name":"中天新闻-辣晚报","id":"j4wVRD2znf0","category":"taiwan"},
+    {"name":"TVBS新闻","id":"wfGLM8Tiz8c","category":"taiwan"},
+    {"name":"寰宇全视界","id":"C5weeuoZQ_w","category":"taiwan"},
+    {"name":"凤凰资讯台","id":"Ry--eMIjYLQ","category":"hk"},
+    {"name":"无线普通话","id":"PX_EW1hwJSE","category":"hk"},
+    {"name":"CGTN","id":"UCmvymry3Z7RLCZL5tQDqnlg","category":"intl"},
+    {"name":"CCTV中文国际","id":"vNVp6bxkL1c","category":"intl"},
+    {"name":"新唐人电视台","id":"2Y2Dhl2hBrg","category":"custom"},
+    {"name":"CNN","id":"UCUPv0gNkASQ6z9_BNSjKqBg","category":"intl"},
+    {"name":"BBC News","id":"UC16niRr50-MSBwiO3YDb3RA","category":"intl"},
+    {"name":"半岛电视台 Al Jazeera","id":"UCfiYHf4aM1jUKmhRmh6mOqg","category":"intl"},
+    {"name":"CCTV13","id":"vNVp6bxkL1c","category":"xinwen"}
+  ],
+  "m3u": [
+    {"name":"vbskycn","url":"https://syy18.github.io/iptv.m3u"}
+  ]
+}
