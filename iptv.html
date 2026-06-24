@@ -199,12 +199,8 @@ function needProxy(url) {
   if (!isHttpUrl(url)) return false;
   // iOS原生HLS不需要CORS，直接播放
   if (isIOS() && !Hls.isSupported()) return false;
-  // 本地服务器（localhost/127.0.0.1）：HLS.js需要CORS代理
-  if (location.hostname === '127.0.0.1' || location.hostname === 'localhost') return true;
-  // HTTPS页面（GitHub Pages）：HTTP流需要代理绕混合内容
-  if (isHttps()) return proxyConfig.enabled;
-  // HTTP页面（局域网代理）：直接播放，不走代理（更快）
-  return false;
+  // 其他所有情况都需要代理（HLS.js XHR需要CORS头）
+  return true;
 }
 
 function proxifyUrl(url) {
