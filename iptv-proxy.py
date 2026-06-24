@@ -1,48 +1,50 @@
 #!/usr/bin/env python3
-"""IPTV 本地服务器 v12 - 性能优化版"""
+"""IPTV 本地服务器 v7 - 连接池加速 + 流式传输"""
 import http.server, socketserver, urllib.parse
-import os, sys, ssl, socket, time, threading, json
+import os, sys, ssl, socket, time, threading
 from http.client import HTTPConnection, HTTPSConnection
 
 PORT = int(sys.argv[1]) if len(sys.argv)>1 else 18888
-HOST = sys.argv[2] if len(sys.argv)>2 else '0.0.0.0'
 REPO = os.path.dirname(os.path.abspath(__file__))
 ssl_ctx = ssl.create_default_context()
 ssl_ctx.check_hostname = False
 ssl_ctx.verify_mode = ssl.CERT_NONE
 
+# 全局基础URL
+_last_base = {'url': None}
 _lock = threading.Lock()
-UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/137.0.0.0 Safari/537.36'
 
-# 连接池: {(scheme,host,port): HTTPConnection}
-_conn_pool = {}
-_pool_lock = threading.Lock()
+# HTTP连接池
+class ConnectionPool:
+    def __init__(self):
+        self._conns = {}
+        self._lock = threading.Lock()
 
-def _get_conn(target):
-    """获取/复用上游HTTP连接"""
-    p = urllib.parse.urlparse(target)
-    key = (p.scheme, p.netloc)
-    with _pool_lock:
-        conn = _conn_pool.get(key)
-        if conn:
-            try:
-                conn.request('HEAD' if False else 'GET', '', body=None)
-                # 简单检测连接是否存活
-                del _conn_pool[key]
-                conn.close()
-            except:
-                try: del _conn_pool[key]
-                except: pass
-                conn = None
-    if p.scheme == 'https':
-        c = HTTPSConnection(p.netloc, timeout=10, context=ssl_ctx)
-    else:
-        c = HTTPConnection(p.netloc, timeout=10)
-    return c, p
+    def get(self, host, port, https=False):
+        key = (host, port, https)
+        with self._lock:
+            if key in self._conns:
+                conn = self._conns.pop(key)
+                try:
+                    conn.request('HEAD', '/')
+                    return conn
+                except:
+                    pass
+        if https:
+            conn = HTTPSConnection(host, port, timeout=15, context=ssl_ctx)
+        else:
+            conn = HTTPConnection(host, port, timeout=15)
+        return conn
+
+    def put(self, host, port, https, conn):
+        key = (host, port, https)
+        with self._lock:
+            if len(self._conns) < 20:
+                self._conns[key] = conn
+
+pool = ConnectionPool()
 
 class H(http.server.BaseHTTPRequestHandler):
-    protocol_version = "HTTP/1.1"
-
     def log_message(self, fmt, *args):
         sys.stderr.write(f"[{time.strftime('%H:%M:%S')}] {args[0]}\n")
         sys.stderr.flush()
@@ -50,16 +52,9 @@ class H(http.server.BaseHTTPRequestHandler):
     def do_OPTIONS(self):
         self.send_response(200); self._cors(); self.end_headers()
 
-    def do_HEAD(self):
-        p = self.path.split('?')[0]
-        if p.startswith('/proxy/'):
-            self._proxy(head_only=True)
-        else:
-            self.send_response(200); self._cors(); self.end_headers()
-
     def do_GET(self):
         p = self.path.split('?')[0]
-        if p=='/' or p=='/status': self._json({"ok":True,"v":12}); return
+        if p=='/' or p=='/status': self._json({"ok":True,"v":7}); return
         if p.startswith('/proxy/'): self._proxy(); return
         self._static(p)
 
@@ -76,112 +71,76 @@ class H(http.server.BaseHTTPRequestHandler):
         self.send_response(200); self.send_header('Content-Type',m.get(ext,'application/octet-stream'))
         self.send_header('Content-Length',len(d)); self.end_headers(); self.wfile.write(d)
 
-    def _proxy(self, head_only=False):
-        enc=self.path[7:]
+    def _proxy(self):
+        enc=self.path[7:]  # /proxy/
         try: target=urllib.parse.unquote(enc)
         except: self.send_error(400); return
 
-        # 相对路径解析
         if not target.startswith(('http://','https://')):
             with _lock:
-                base=_last_base.get('url')
+                base=_last_base['url']
             if base:
                 target=base.rsplit('/',1)[0]+'/'+target
+                self.log_message("REL -> %s", target[:90])
             else:
                 self.send_error(400,"No base"); return
-        elif '.m3u8' in target.lower():
-            with _lock:
-                _last_base['url'] = target
-
-        is_m3u8 = '.m3u8' in target.lower()
-        p = urllib.parse.urlparse(target)
+        else:
+            if '.m3u8' in target:
+                with _lock:
+                    _last_base['url']=target
+                self.log_message("BASE = %s", target[:90])
 
         try:
-            # 使用 http.client 直接连接（比 urllib 快）
-            if p.scheme == 'https':
-                conn = HTTPSConnection(p.netloc, timeout=10, context=ssl_ctx)
-            else:
-                conn = HTTPConnection(p.netloc, timeout=10)
+            p=urllib.parse.urlparse(target)
+            https=p.scheme=='https'
+            host=p.port and p.hostname or p.hostname
+            port=p.port or (443 if https else 80)
+            path=p.path or '/'
+            if p.query: path+='?'+p.query
 
-            path_query = p.path
-            if p.query: path_query += '?' + p.query
-            headers = {
-                'User-Agent': UA,
-                'Referer': f'{p.scheme}://{p.netloc}/',
-                'Host': p.netloc,
+            conn=pool.get(p.hostname, port, https)
+            headers={
+                'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'Referer':f'{p.scheme}://{p.netloc}/',
+                'Origin':f'{p.scheme}://{p.netloc}',
+                'Host':p.netloc
             }
-            method = 'HEAD' if head_only else 'GET'
-            conn.request(method, path_query, headers=headers)
-            r = conn.getresponse()
+            conn.request('GET', path, headers=headers)
+            r=conn.getresponse()
 
-            ct = r.getheader('Content-Type', 'application/octet-stream')
-            if is_m3u8 or 'mpegurl' in ct.lower():
-                ct = 'application/vnd.apple.mpegurl'
+            # 读取响应体
+            data=r.read()
+            ct=r.headers.get('Content-Type','application/octet-stream')
+            if target.endswith('.m3u8') or 'mpegurl' in ct.lower(): ct='application/vnd.apple.mpegurl'
 
-            if head_only:
-                self.send_response(200); self._cors()
-                self.send_header('Content-Type', ct)
-                self.end_headers()
-                r.read()
-                conn.close()
-                return
-
-            # m3u8: 直接透传（不重写，让浏览器自动解析相对路径）
-            if is_m3u8:
-                data = r.read()
-                conn.close()
-                self.send_response(200); self._cors()
-                self.send_header('Content-Type', ct)
-                self.send_header('Content-Length', len(data))
-                self.end_headers()
-                self.wfile.write(data)
-                self.log_message("M3U8 %d bytes %s", len(data), target[:70])
-            else:
-                # .ts等: 流式传输，大缓冲区
-                cl = r.getheader('Content-Length')
-                self.send_response(200); self._cors()
-                self.send_header('Content-Type', ct)
-                if cl:
-                    self.send_header('Content-Length', cl)
-                self.end_headers()
-                total = 0
-                while True:
-                    chunk = r.read(262144)  # 256KB 缓冲区
-                    if not chunk: break
-                    try:
-                        self.wfile.write(chunk)
-                        self.wfile.flush()
-                        total += len(chunk)
-                    except (BrokenPipeError, OSError):
-                        break
-                conn.close()
-                self.log_message("OK %d %s", total, target[:70])
-
+            self.send_response(r.status); self._cors()
+            self.send_header('Content-Type',ct); self.send_header('Content-Length',len(data))
+            self.end_headers(); self.wfile.write(data)
+            pool.put(p.hostname, port, https, conn)
+            self.log_message("OK %d",len(data))
         except Exception as e:
+            self.log_message("ERR %s",str(e)[:60])
             try: self.send_error(502)
             except: pass
 
     def _cors(self):
         self.send_header('Access-Control-Allow-Origin','*')
-        self.send_header('Access-Control-Allow-Methods','GET,HEAD,OPTIONS')
+        self.send_header('Access-Control-Allow-Methods','GET,OPTIONS')
         self.send_header('Access-Control-Allow-Headers','*')
 
     def _json(self, o):
-        d=json.dumps(o).encode()
+        import json; d=json.dumps(o).encode()
         self.send_response(200); self._cors()
         self.send_header('Content-Type','application/json')
         self.send_header('Content-Length',len(d)); self.end_headers(); self.wfile.write(d)
-
-_last_base = {'url': None}
 
 class S(socketserver.ThreadingMixIn, http.server.HTTPServer):
     daemon_threads=True; allow_reuse_address=True
 
 if __name__=="__main__":
     import socket as _sock
-    srv=S((HOST,PORT),H)
+    srv=S(('0.0.0.0',PORT),H)
     _ip=_sock.gethostbyname(_sock.gethostname())
-    print(f"IPTV v12 -> http://{_ip}:{PORT}/iptv.html")
-    print(f"  LAN access: http://{_ip}:{PORT}/iptv.html")
+    print(f"IPTV v7 -> http://{_ip}:{PORT}/iptv.html")
     try: srv.serve_forever()
     except KeyboardInterrupt: srv.server_close()

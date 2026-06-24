@@ -72,21 +72,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC
 .proxy-card .btn-secondary{background:#f0ebe4;color:#8b7355}
 .proxy-card .status-text{font-size:12px;margin-top:8px}
 @media(max-width:600px){.channel-grid{grid-template-columns:repeat(2,1fr);gap:8px;padding:12px}.toolbar{padding:10px 14px}.search-box{min-width:140px}.nav-bar{padding:10px 14px;gap:10px;flex-wrap:wrap}}
-.ios-banner{background:linear-gradient(135deg,#ff9500,#ff6b00);color:#fff;padding:14px 20px;text-align:center;font-size:14px;line-height:1.8;display:none}
-.ios-banner.show{display:block}
-.ios-banner a{color:#fff;font-weight:700;text-decoration:underline}
-.ios-banner .ios-close{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:#fff;font-size:20px;cursor:pointer;opacity:.7}
-.ios-banner .ios-close:hover{opacity:1}
 </style>
 </head>
 <body>
-
-<div class="ios-banner" id="ios-banner" style="position:relative">
-  📱 <strong>iOS 设备无法直接播放</strong>（混合内容限制）<br>
-  请启动本地代理后访问：<a id="ios-proxy-link" href="#">局域网电视墙</a><br>
-  <span style="font-size:12px;opacity:.85">命令：python iptv-proxy.py → 然后点上方链接</span>
-  <button class="ios-close" onclick="this.parentElement.classList.remove('show')">✕</button>
-</div>
 
 <div class="nav-bar">
   <span class="nav-title">秋暑的小馆</span>
@@ -189,26 +177,19 @@ function saveProxyConfig() {
   localStorage.setItem(PROXY_KEY, JSON.stringify(proxyConfig));
 }
 
-function isIOS() {
-  return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-}
 function isHttps() { return location.protocol === 'https:'; }
 function isHttpUrl(url) { return url.indexOf('http:') === 0; }
 function needProxy(url) {
-  if (!isHttpUrl(url)) return false;
-  // iOS原生HLS不需要CORS，直接播放
-  if (isIOS() && !Hls.isSupported()) return false;
-  // 其他所有情况都需要代理（HLS.js XHR需要CORS头）
-  return true;
+  // 本地服务器模式：始终代理（解决CORS跨域）
+  if (location.hostname === '127.0.0.1' || location.hostname === 'localhost') return isHttpUrl(url);
+  // GitHub Pages模式：仅HTTPS页面代理HTTP流
+  return proxyConfig.enabled && isHttps() && isHttpUrl(url);
 }
 
 function proxifyUrl(url) {
   if (!needProxy(url)) return url;
   if (proxyConfig.mode === 'local') {
-    // 已在代理服务器上时，用当前地址（不用127.0.0.1，手机上127指向自己）
-    var base = (location.port === '18888') ? (location.protocol + '//' + location.host) : proxyConfig.localUrl;
-    return base + '/proxy/' + encodeURIComponent(url);
+    return proxyConfig.localUrl + '/proxy/' + encodeURIComponent(url);
   } else {
     return proxyConfig.corsUrl + encodeURIComponent(url);
   }
@@ -219,26 +200,6 @@ function proxifyUrl(url) {
   var el = document.getElementById('proxy-toggle');
   if (proxyConfig.enabled) {
     el.classList.add(proxyConfig.mode === 'local' ? 'local' : 'active');
-  }
-})();
-
-// iOS 检测：HTTPS + iOS → 显示引导横幅
-(function() {
-  if (!isIOS() || !isHttps()) return;
-  // 构造局域网代理链接：用当前页面的路径拼到代理地址
-  var banner = document.getElementById('ios-banner');
-  var link = document.getElementById('ios-proxy-link');
-  // 尝试探测本地代理是否在线，构造链接
-  var localIP = localStorage.getItem('iptv_local_ip') || '192.168.3.186';
-  var proxyBase = 'http://' + localIP + ':18888';
-  link.href = proxyBase + '/iptv.html';
-  banner.classList.add('show');
-  // 同时自动开启 CORS 代理作为备选
-  if (!proxyConfig.enabled) {
-    proxyConfig.enabled = true;
-    proxyConfig.mode = 'cors';
-    saveProxyConfig();
-    updateProxyUI();
   }
 })();
 
@@ -346,12 +307,7 @@ function hideStatus() {
     div.className = 'welcome-overlay';
     div.id = 'welcome-overlay';
     var isPC = !('ontouchstart' in window);
-    var proxyTip = '';
-    if (isIOS() && isHttps()) {
-      proxyTip = '<p style="margin-top:8px;color:#ff6b00;font-size:13px">📱 <strong>iPhone/iPad 用户必看</strong>：当前页面无法播放频道！<br>请在电脑上运行 <code>python iptv-proxy.py</code>，然后 iPhone 访问 <code>http://电脑IP:18888</code></p>';
-    } else if (isPC) {
-      proxyTip = '<p style="margin-top:8px;color:#e67e22;font-size:13px">💻 电脑用户：频道播放不了？点工具栏「🛡️ 代理」，先运行 <code>python iptv-proxy.py</code></p>';
-    }
+    var proxyTip = isPC ? '<p style="margin-top:8px;color:#e67e22;font-size:13px">💻 电脑用户：频道播放不了？点工具栏「🛡️ 代理」，先运行 <code>python iptv-proxy.py</code></p>' : '';
     div.innerHTML = '<div class="welcome-card"><h2>📺 欢迎来到电视墙</h2><p>🎯 点击频道卡片即可播放</p><p>◀ → 方向键切换频道</p><p>⭐ 收藏你喜欢的频道</p><p>🔍 搜索频道名称或分组</p>' + proxyTip + '<p style="margin-top:12px;color:#b0a090;font-size:12px">频道数据从云端自动同步</p><button class="btn" onclick="dismissWelcome()">开始看电视</button></div>';
     document.body.appendChild(div);
   }
