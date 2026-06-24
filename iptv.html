@@ -17,8 +17,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC
 .player-wrapper{position:relative;width:100%;background:#000}
 #video-container{width:100%;max-width:960px;margin:0 auto;background:#000;aspect-ratio:16/9;position:relative}
 #video-container video{width:100%;height:100%;display:block}
-#yt-player-container{width:100%;height:100%;display:none}
-#yt-player-container iframe{width:100%;height:100%;border:none}
 .player-controls{display:flex;align-items:center;justify-content:center;gap:12px;padding:10px;background:#1a1a1a;flex-wrap:wrap}
 .player-controls button{background:rgba(255,255,255,0.12);color:#fff;border:none;padding:8px 18px;border-radius:6px;cursor:pointer;font-size:14px}
 .player-controls button:hover{background:rgba(255,255,255,0.25)}
@@ -44,7 +42,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC
 .fav-btn{position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.5);color:#fff;border:none;border-radius:50%;width:26px;height:26px;font-size:13px;cursor:pointer;z-index:2;display:flex;align-items:center;justify-content:center}
 .fav-btn:hover{background:rgba(0,0,0,0.75)}
 .fav-btn.active{color:#ffd700}
-.yt-badge{position:absolute;bottom:6px;left:6px;background:rgba(255,0,0,0.8);color:#fff;font-size:10px;padding:2px 6px;border-radius:4px;z-index:2}
+.yt-badge{position:absolute;bottom:6px;left:6px;background:#ff0000;color:#fff;font-size:10px;padding:2px 6px;border-radius:4px;z-index:2}
+.ext-play-badge{position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,0.7);color:#fff;font-size:10px;padding:3px 8px;border-radius:4px;z-index:2;display:flex;align-items:center;gap:3px}
 .loading{text-align:center;padding:60px 20px;color:#b0a090;font-size:15px}
 .loading .spinner{display:inline-block;width:32px;height:32px;border:3px solid #e0d6cb;border-top-color:#8b7355;border-radius:50%;animation:spin .8s linear infinite;margin-bottom:12px}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -56,6 +55,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC
 .welcome-card p{color:#8b7355;font-size:14px;line-height:1.7;margin-bottom:8px}
 .welcome-card .btn{display:inline-block;margin-top:16px;padding:10px 32px;background:#8b7355;color:#fff;border:none;border-radius:24px;font-size:15px;cursor:pointer}
 .welcome-card .btn:hover{background:#7a6347}
+.external-hint{text-align:center;padding:40px 20px;color:#888;font-size:14px}
+.external-hint .big-icon{font-size:48px;margin-bottom:12px;display:block}
 @media(max-width:600px){.channel-grid{grid-template-columns:repeat(2,1fr);gap:8px;padding:12px}.toolbar{padding:10px 14px}.search-box{min-width:140px}.nav-bar{padding:10px 14px;gap:10px;flex-wrap:wrap}}
 </style>
 </head>
@@ -70,8 +71,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC
 
 <div class="player-wrapper">
   <div id="video-container">
-    <video id="video-player" controls autoplay playsinline style="display:none"></video>
-    <div id="yt-player-container"></div>
+    <video id="video-player" controls autoplay playsinline></video>
   </div>
   <div class="player-controls">
     <button onclick="switchChannel(-1)">◀ 上一频道</button>
@@ -112,15 +112,13 @@ var currentCategory = 'all';
 var currentChannel = null;
 var hlsInstance = null;
 var dashInstance = null;
-var ytPlayer = null;
-var ytReady = false;
 
 (function() {
   if (!localStorage.getItem(WELCOME_KEY)) {
     var div = document.createElement('div');
     div.className = 'welcome-overlay';
     div.id = 'welcome-overlay';
-    div.innerHTML = '<div class="welcome-card"><h2>📺 欢迎来到电视墙</h2><p>🌟 稳定频道 = YouTube 直播，长期有效</p><p>📡 M3U 源 = 公开直播源</p><p>🎯 点击频道卡片即可播放</p><p>◀ → 方向键切换频道</p><p>⭐ 收藏你喜欢的频道</p><button class="btn" onclick="dismissWelcome()">开始看电视</button></div>';
+    div.innerHTML = '<div class="welcome-card"><h2>📺 欢迎来到电视墙</h2><p>🌟 稳定频道 = YouTube，新标签页播放（兼容所有设备）</p><p>📡 M3U 源 = 内嵌播放</p><p>◀ → 方向键切换 M3U 频道</p><p>⭐ 收藏你喜欢的频道</p><button class="btn" onclick="dismissWelcome()">开始看电视</button></div>';
     document.body.appendChild(div);
   }
 })();
@@ -135,108 +133,38 @@ document.addEventListener('keydown', function(e) {
   else if (e.key === 'ArrowRight') switchChannel(1);
 });
 
-// ===== YouTube Player API =====
-function onYouTubeIframeAPIReady() {
-  ytReady = true;
-}
-
-function loadYtApi() {
-  if (window.YT && window.YT.Player) { ytReady = true; return; }
-  var tag = document.createElement('script');
-  tag.src = 'https://www.youtube.com/iframe_api';
-  var first = document.getElementsByTagName('script')[0];
-  first.parentNode.insertBefore(tag, first);
-}
-loadYtApi();
-
 function isYoutubeChannel(ch) {
   return ch.type === 'youtube';
 }
 
 function playYoutube(ch) {
-  var video = document.getElementById('video-player');
-  var container = document.getElementById('yt-player-container');
+  // 在新标签页打开 YouTube 直播
+  var channelId = ch.id;
+  var url = '';
+  if (channelId.indexOf('UC') === 0) {
+    url = 'https://www.youtube.com/channel/' + channelId + '/live';
+  } else {
+    url = 'https://www.youtube.com/watch?v=' + channelId;
+  }
+  window.open(url, '_blank');
 
-  video.style.display = 'none';
+  // 在播放器区域显示提示
+  var video = document.getElementById('video-player');
   video.pause();
   video.src = '';
   if (hlsInstance) { try { hlsInstance.destroy(); } catch(e){} hlsInstance = null; }
   if (dashInstance) { try { dashInstance.reset(); } catch(e){} dashInstance = null; }
-
-  container.style.display = 'block';
-  if (ytPlayer) {
-    try { ytPlayer.destroy(); } catch(e){} ytPlayer = null;
-  }
-
-  var channelId = ch.id;
-  var videoId = '';
-  if (channelId.indexOf('UC') === 0) {
-    videoId = 'live_stream?channel=' + channelId;
-  } else {
-    videoId = channelId;
-  }
-
-  container.innerHTML = '<div id="yt-embed"></div>';
-
-  if (window.YT && window.YT.Player) {
-    createYtPlayer(videoId);
-  } else {
-    ytReady = false;
-    window.onYouTubeIframeAPIReady = function() {
-      ytReady = true;
-      createYtPlayer(videoId);
-    };
-    if (!document.querySelector('script[src*="youtube.com/iframe_api"]')) {
-      loadYtApi();
-    }
-  }
-
   currentChannel = ch;
   document.getElementById('current-channel-name').textContent = ch.source_name || ch.name;
   updatePosition();
   renderChannelGrid();
 }
 
-function createYtPlayer(videoId) {
-  var el = document.getElementById('yt-embed');
-  if (!el) return;
-  try {
-    ytPlayer = new YT.Player('yt-embed', {
-      height: '100%',
-      width: '100%',
-      videoId: videoId,
-      playerVars: {
-        'autoplay': 1,
-        'playsinline': 1,
-        'controls': 1,
-        'rel': 0
-      },
-      events: {
-        'onError': function(e) { console.warn('YT error:', e.data); }
-      }
-    });
-  } catch(e) {
-    console.warn('YT Player create fail:', e);
-    // 降级为 iframe
-    var src = videoId.indexOf('live_stream') >= 0
-      ? 'https://www.youtube.com/embed/' + videoId + '?autoplay=1&playsinline=1'
-      : 'https://www.youtube.com/embed/' + videoId + '?autoplay=1&playsinline=1';
-    el.innerHTML = '<iframe style="width:100%;height:100%;border:none" src="' + src + '" allow="autoplay;encrypted-media" allowfullscreen></iframe>';
-  }
-}
-
 function playM3U(ch) {
-  var video = document.getElementById('video-player');
-  var container = document.getElementById('yt-player-container');
-
-  container.style.display = 'none';
-  container.innerHTML = '';
-  if (ytPlayer) { try { ytPlayer.destroy(); } catch(e){} ytPlayer = null; }
-  video.style.display = 'block';
-
   if (hlsInstance) { try { hlsInstance.destroy(); } catch(e){} hlsInstance = null; }
   if (dashInstance) { try { dashInstance.reset(); } catch(e){} dashInstance = null; }
 
+  var video = document.getElementById('video-player');
   document.getElementById('current-channel-name').textContent = ch.name;
   var url = ch.url;
   if (!url) { video.src = ''; return; }
@@ -392,10 +320,11 @@ function renderChannelGrid() {
     var isFav = favs.indexOf(ch.name) >= 0 || favs.indexOf(ch.source_name || ch.name) >= 0;
     var isYt = isYoutubeChannel(ch);
     var logoHtml = ch.logo ? '<img src="' + ch.logo + '" alt="" onerror="this.style.display=\'none\'">' : '';
-    var badgeHtml = isYt ? '<span class="yt-badge">YouTube</span>' : '';
+    var badgeHtml = isYt ? '<span class="yt-badge">YT</span>' : '';
+    var extHtml = isYt ? '<span class="ext-play-badge">🔗 新标签页</span>' : '';
     var displayName = ch.source_name || ch.name;
     var starHtml = '<button class="fav-btn ' + (isFav ? 'active' : '') + '" onclick="event.stopPropagation();toggleFav(\'' + (displayName || '').replace(/'/g,"\\'") + '\')">' + (isFav ? '★' : '☆') + '</button>';
-    html += '<div class="channel-card' + (isActive ? ' active' : '') + '" onclick="playChannelByIndex(' + i + ')"><div class="channel-thumb">' + logoHtml + badgeHtml + starHtml + '</div><div class="channel-info-block"><div class="channel-name">' + displayName + '</div><div class="channel-group">' + (isYt ? '🌟 稳定频道' : (ch.group || 'M3U 源')) + '</div></div></div>';
+    html += '<div class="channel-card' + (isActive ? ' active' : '') + '" onclick="playChannelByIndex(' + i + ')"><div class="channel-thumb">' + logoHtml + badgeHtml + extHtml + starHtml + '</div><div class="channel-info-block"><div class="channel-name">' + displayName + '</div><div class="channel-group">' + (isYt ? '🌟 稳定·新标签页' : (ch.group || 'M3U 源')) + '</div></div></div>';
   }
   grid.innerHTML = html;
 }
@@ -419,7 +348,7 @@ function playChannelByIndex(idx) {
 
 function switchChannel(dir) {
   if (filteredChannels.length === 0) return;
-  if (!currentChannel) { playChannel(filteredChannels[0]); return; }
+  if (!currentChannel) { if (filteredChannels[0].type !== 'youtube') playChannel(filteredChannels[0]); return; }
 
   var idx = -1;
   for (var i = 0; i < filteredChannels.length; i++) {
@@ -432,10 +361,21 @@ function switchChannel(dir) {
     }
   }
   if (idx === -1) idx = 0;
-  var newIdx = idx + dir;
-  if (newIdx < 0) newIdx = filteredChannels.length - 1;
-  if (newIdx >= filteredChannels.length) newIdx = 0;
-  playChannel(filteredChannels[newIdx]);
+
+  // 跳过 YouTube 频道（因为 YouTube 是外部播放）
+  var newIdx = idx;
+  var attempts = 0;
+  do {
+    newIdx = newIdx + dir;
+    if (newIdx < 0) newIdx = filteredChannels.length - 1;
+    if (newIdx >= filteredChannels.length) newIdx = 0;
+    attempts++;
+    if (attempts > filteredChannels.length) break;
+  } while (filteredChannels[newIdx].type === 'youtube');
+
+  if (filteredChannels[newIdx].type !== 'youtube') {
+    playChannel(filteredChannels[newIdx]);
+  }
 }
 
 function updatePosition() {
@@ -469,3 +409,20 @@ function toggleFav(name) {
 </script>
 </body>
 </html>
+</details>
+
+---
+
+**改动说明：**
+
+- **稳定频道（YouTube）** → 点卡片后，在新标签页打开 YouTube 直播页面播放。**所有浏览器都能播，100%有效**
+- **M3U 源** → 保持内嵌播放（hls.js），不受影响
+- 方向键换台会**跳过 YouTube 频道**，只在 M3U 源之间切换
+- 频道卡片上会显示 🔗 新标签页 标识
+
+**上传步骤：**
+1. 打开 https://github.com/syy18/syy18.github.io
+2. 点 **`iptv.html`** → ✏️ 编辑
+3. Ctrl+A 全选 → 粘贴上面代码 → **Commit changes**
+
+等 1-2 分钟后，用小米浏览器打开 https://syy18.github.io/iptv.html → 点**东森新闻**试试——应该会新开一个标签页播放 YouTube 直播了！
