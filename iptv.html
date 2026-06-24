@@ -208,7 +208,9 @@ function needProxy(url) {
 function proxifyUrl(url) {
   if (!needProxy(url)) return url;
   if (proxyConfig.mode === 'local') {
-    return proxyConfig.localUrl + '/proxy/' + encodeURIComponent(url);
+    // 已在代理服务器上时，用当前地址（不用127.0.0.1，手机上127指向自己）
+    var base = (location.port === '18888') ? (location.protocol + '//' + location.host) : proxyConfig.localUrl;
+    return base + '/proxy/' + encodeURIComponent(url);
   } else {
     return proxyConfig.corsUrl + encodeURIComponent(url);
   }
