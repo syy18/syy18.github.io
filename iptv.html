@@ -17,7 +17,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC
 .player-wrapper{position:relative;width:100%;background:#000}
 #video-container{width:100%;max-width:960px;margin:0 auto;background:#000;aspect-ratio:16/9;position:relative}
 #video-container video{width:100%;height:100%;display:block}
-#video-container iframe{width:100%;height:100%;border:none}
+#yt-player-container{width:100%;height:100%;display:none}
+#yt-player-container iframe{width:100%;height:100%;border:none}
 .player-controls{display:flex;align-items:center;justify-content:center;gap:12px;padding:10px;background:#1a1a1a;flex-wrap:wrap}
 .player-controls button{background:rgba(255,255,255,0.12);color:#fff;border:none;padding:8px 18px;border-radius:6px;cursor:pointer;font-size:14px}
 .player-controls button:hover{background:rgba(255,255,255,0.25)}
@@ -70,7 +71,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC
 <div class="player-wrapper">
   <div id="video-container">
     <video id="video-player" controls autoplay playsinline style="display:none"></video>
-    <iframe id="yt-player" style="display:none" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    <div id="yt-player-container"></div>
   </div>
   <div class="player-controls">
     <button onclick="switchChannel(-1)">◀ 上一频道</button>
@@ -111,13 +112,15 @@ var currentCategory = 'all';
 var currentChannel = null;
 var hlsInstance = null;
 var dashInstance = null;
+var ytPlayer = null;
+var ytReady = false;
 
 (function() {
   if (!localStorage.getItem(WELCOME_KEY)) {
     var div = document.createElement('div');
     div.className = 'welcome-overlay';
     div.id = 'welcome-overlay';
-    div.innerHTML = '<div class="welcome-card"><h2>📺 欢迎来到电视墙</h2><p>🌟 稳定频道 = YouTube 直播，长期有效</p><p>📡 M3U 源 = 公开直播源，可能有波动</p><p>🎯 点击频道卡片即可播放</p><p>◀ → 方向键切换频道</p><p>⭐ 收藏你喜欢的频道</p><button class="btn" onclick="dismissWelcome()">开始看电视</button></div>';
+    div.innerHTML = '<div class="welcome-card"><h2>📺 欢迎来到电视墙</h2><p>🌟 稳定频道 = YouTube 直播，长期有效</p><p>📡 M3U 源 = 公开直播源</p><p>🎯 点击频道卡片即可播放</p><p>◀ → 方向键切换频道</p><p>⭐ 收藏你喜欢的频道</p><button class="btn" onclick="dismissWelcome()">开始看电视</button></div>';
     document.body.appendChild(div);
   }
 })();
@@ -132,44 +135,103 @@ document.addEventListener('keydown', function(e) {
   else if (e.key === 'ArrowRight') switchChannel(1);
 });
 
-// 判断是否为 YouTube 频道
+// ===== YouTube Player API =====
+function onYouTubeIframeAPIReady() {
+  ytReady = true;
+}
+
+function loadYtApi() {
+  if (window.YT && window.YT.Player) { ytReady = true; return; }
+  var tag = document.createElement('script');
+  tag.src = 'https://www.youtube.com/iframe_api';
+  var first = document.getElementsByTagName('script')[0];
+  first.parentNode.insertBefore(tag, first);
+}
+loadYtApi();
+
 function isYoutubeChannel(ch) {
   return ch.type === 'youtube';
 }
 
-// 播放 YouTube 频道
 function playYoutube(ch) {
   var video = document.getElementById('video-player');
-  var iframe = document.getElementById('yt-player');
+  var container = document.getElementById('yt-player-container');
+
   video.style.display = 'none';
-  iframe.style.display = 'block';
-  if (hlsInstance) { try { hlsInstance.destroy(); } catch(e){} hlsInstance = null; }
-  if (dashInstance) { try { dashInstance.reset(); } catch(e){} dashInstance = null; }
   video.pause();
   video.src = '';
+  if (hlsInstance) { try { hlsInstance.destroy(); } catch(e){} hlsInstance = null; }
+  if (dashInstance) { try { dashInstance.reset(); } catch(e){} dashInstance = null; }
+
+  container.style.display = 'block';
+  if (ytPlayer) {
+    try { ytPlayer.destroy(); } catch(e){} ytPlayer = null;
+  }
 
   var channelId = ch.id;
-  // 如果是 channel ID（以 UC 开头），用 channel 直播流
-  // 如果是视频 ID，用 video 嵌入
-  var src = '';
+  var videoId = '';
   if (channelId.indexOf('UC') === 0) {
-    src = 'https://www.youtube.com/embed/live_stream?channel=' + channelId + '&autoplay=1';
+    videoId = 'live_stream?channel=' + channelId;
   } else {
-    src = 'https://www.youtube.com/embed/' + channelId + '?autoplay=1';
+    videoId = channelId;
   }
-  iframe.src = src;
+
+  container.innerHTML = '<div id="yt-embed"></div>';
+
+  if (window.YT && window.YT.Player) {
+    createYtPlayer(videoId);
+  } else {
+    ytReady = false;
+    window.onYouTubeIframeAPIReady = function() {
+      ytReady = true;
+      createYtPlayer(videoId);
+    };
+    if (!document.querySelector('script[src*="youtube.com/iframe_api"]')) {
+      loadYtApi();
+    }
+  }
+
   currentChannel = ch;
   document.getElementById('current-channel-name').textContent = ch.source_name || ch.name;
   updatePosition();
   renderChannelGrid();
 }
 
-// 播放 HLS/DASH 频道
+function createYtPlayer(videoId) {
+  var el = document.getElementById('yt-embed');
+  if (!el) return;
+  try {
+    ytPlayer = new YT.Player('yt-embed', {
+      height: '100%',
+      width: '100%',
+      videoId: videoId,
+      playerVars: {
+        'autoplay': 1,
+        'playsinline': 1,
+        'controls': 1,
+        'rel': 0
+      },
+      events: {
+        'onError': function(e) { console.warn('YT error:', e.data); }
+      }
+    });
+  } catch(e) {
+    console.warn('YT Player create fail:', e);
+    // 降级为 iframe
+    var src = videoId.indexOf('live_stream') >= 0
+      ? 'https://www.youtube.com/embed/' + videoId + '?autoplay=1&playsinline=1'
+      : 'https://www.youtube.com/embed/' + videoId + '?autoplay=1&playsinline=1';
+    el.innerHTML = '<iframe style="width:100%;height:100%;border:none" src="' + src + '" allow="autoplay;encrypted-media" allowfullscreen></iframe>';
+  }
+}
+
 function playM3U(ch) {
   var video = document.getElementById('video-player');
-  var iframe = document.getElementById('yt-player');
-  iframe.style.display = 'none';
-  iframe.src = '';
+  var container = document.getElementById('yt-player-container');
+
+  container.style.display = 'none';
+  container.innerHTML = '';
+  if (ytPlayer) { try { ytPlayer.destroy(); } catch(e){} ytPlayer = null; }
   video.style.display = 'block';
 
   if (hlsInstance) { try { hlsInstance.destroy(); } catch(e){} hlsInstance = null; }
@@ -218,7 +280,6 @@ function playChannel(ch) {
     var resp = await fetch(DEFAULT_SOURCES_URL);
     var config = await resp.json();
 
-    // 加载 YouTube 频道
     var ytChannels = (config.youtube || []).map(function(yt) {
       return {
         name: yt.name,
@@ -230,9 +291,8 @@ function playChannel(ch) {
       };
     });
 
-    // 加载 M3U 源
-    var m3uSources = config.m3u || [];
     var m3uChannels = [];
+    var m3uSources = config.m3u || [];
     for (var i = 0; i < m3uSources.length; i++) {
       try {
         var r = await fetch(m3uSources[i].url);
@@ -240,13 +300,11 @@ function playChannel(ch) {
         var chs = parseM3U(text, m3uSources[i].name);
         m3uChannels = m3uChannels.concat(chs);
       } catch(e) {
-        console.warn('M3U加载失败:', m3uSources[i].name);
+        console.warn('加载M3U失败:', m3uSources[i].name);
       }
     }
 
-    // 合并：YouTube 频道在前，M3U 频道在后
     allChannels = ytChannels.concat(m3uChannels);
-
     applyFilterAndRender();
   } catch(e) {
     console.error('init fail:', e);
